@@ -1,12 +1,12 @@
 {
-  "name": "ModTemplate",
+  "name": "Contracts",
   "author": "TheDerpGamer",
-  "description": "Template for making StarMade mods.",
-  "version": "1.0.0",
-  "starmade_version": "0.203.137",
+  "description": "Adds completable contracts for player and faction interaction.",
+  "version": "2.0.0",
+  "starmade_version": "0.203.165",
   "client_mod": false,
   "server_mod": false,
-  "main_class": "thederpgamer.modtemplate.ModTemplate",
+  "main_class": "thederpgamer.contracts.Contracts",
   "smd_resource_id": 9999,
   "dependencies": [
     -1
