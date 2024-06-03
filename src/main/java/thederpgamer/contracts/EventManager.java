@@ -11,6 +11,7 @@ import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback
 import org.schema.schine.graphicsengine.forms.gui.GUICallback;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import org.schema.schine.input.InputState;
+import thederpgamer.contracts.networking.client.ClientDataManager;
 
 public class EventManager {
 
@@ -35,7 +36,7 @@ public class EventManager {
                 }, new GUIActivationHighlightCallback() {
                     @Override
                     public boolean isHighlighted(InputState inputState) {
-                        return false; //Todo: Highlight when contracts are available
+                        return ClientDataManager.canCompleteAny();
                     }
 
                     @Override

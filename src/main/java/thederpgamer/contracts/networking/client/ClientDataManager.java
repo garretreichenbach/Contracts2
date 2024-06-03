@@ -59,4 +59,11 @@ public class ClientDataManager {
             ClientActionType.CLAIM_CONTRACT.send(uid);
         }
     }
+
+    public static boolean canCompleteAny() {
+        for(ClientContractData contract : clientData.values()) {
+            if(contract.canComplete()) return true;
+        }
+        return false;
+    }
 }
