@@ -14,7 +14,7 @@ public class ConfigManager {
             "client-max-active-contracts: 5",
             "auto-generate-contracts: true",
             "max-auto-generate-contracts: 15",
-            "auto-generate-contract-check-timer: 300",
+            "auto-generate-contract-check-timer: 3000",
             "contract-timeout-timer: 600000" //If nobody claims a contract after this time, it will be removed
     };
     private static FileConfiguration mainConfig;

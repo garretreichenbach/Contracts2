@@ -21,7 +21,6 @@ import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import org.schema.schine.input.InputState;
 import org.schema.schine.network.server.ServerMessage;
 import thederpgamer.contracts.data.contract.BountyContract;
-import thederpgamer.contracts.data.contract.ClientContractData;
 import thederpgamer.contracts.data.contract.Contract;
 import thederpgamer.contracts.gui.contract.playercontractlist.PlayerContractsDialog;
 import thederpgamer.contracts.networking.client.ClientDataManager;
@@ -67,9 +66,9 @@ public class EventManager {
 		StarLoader.registerListener(PlayerSpawnEvent.class, new Listener<PlayerSpawnEvent>() {
 			@Override
 			public void onEvent(final PlayerSpawnEvent event) {
-				final ArrayList<ClientContractData> contractDataList = new ArrayList<>();
+				final ArrayList<Contract> contractDataList = new ArrayList<>();
 				for(Contract contract : ServerDataManager.getAllContracts()) {
-					contractDataList.add(new ClientContractData(contract));
+					contractDataList.add(contract);
 				}
 				if(event.getPlayer().getOwnerState() != null) {
 					ServerActionType.SEND_CONTRACTS_LIST.send(event.getPlayer().getOwnerState(), contractDataList);

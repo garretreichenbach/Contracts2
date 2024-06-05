@@ -159,6 +159,10 @@ public abstract class Contract implements JSONSerializable {
 		writeToBuffer(packetWriteBuffer);
 	}
 
+	public boolean canClaim(PlayerState playerState) {
+		return !claimants.containsKey(playerState.getName()) && playerState.getFactionId() != contractorID && !GameCommon.getGameState().getFactionManager().isEnemy(contractorID, playerState.getFactionId());
+	}
+
 	public enum ContractType {
 		ALL("All"),
 		BOUNTY("Bounty"),

@@ -4,8 +4,6 @@ import api.network.Packet;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.schema.game.common.data.player.PlayerState;
-import thederpgamer.contracts.ConfigManager;
-import thederpgamer.contracts.data.contract.ClientContractData;
 import thederpgamer.contracts.data.contract.Contract;
 import thederpgamer.contracts.networking.client.ClientDataManager;
 
@@ -18,43 +16,27 @@ import java.io.IOException;
  */
 public class SendContractPacket extends Packet {
 
-    private String UID;
-    private String name;
-    private int contractor;
-    private long reward;
-    private Contract.ContractType contractType;
+    private Contract contract;
 
     public SendContractPacket() {}
 
     public SendContractPacket(Contract contract) {
-        UID = contract.getUID();
-        name = contract.getName();
-        contractor = contract.getContractor().getIdFaction();
-        reward = contract.getReward();
-        contractType = contract.getContractType();
+        this.contract = contract;
     }
 
     @Override
     public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
-        UID = packetReadBuffer.readString();
-        name = packetReadBuffer.readString();
-        contractor = packetReadBuffer.readInt();
-        reward = packetReadBuffer.readLong();
-        contractType = Contract.ContractType.values()[packetReadBuffer.readInt()];
+        contract = Contract.readContract(packetReadBuffer);
     }
 
     @Override
     public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
-        packetWriteBuffer.writeString(UID);
-        packetWriteBuffer.writeString(name);
-        packetWriteBuffer.writeInt(contractor);
-        packetWriteBuffer.writeLong(reward);
-        packetWriteBuffer.writeInt(contractType.ordinal());
+        contract.writeContract(packetWriteBuffer);
     }
 
     @Override
     public void processPacketOnClient() {
-        ClientDataManager.addContract(new ClientContractData(UID, name, contractor, reward, ConfigManager.getMainConfig().getLong("contract-timer-max"), contractType));
+        ClientDataManager.addContract(contract);
     }
 
     @Override

@@ -1,7 +1,9 @@
 package thederpgamer.contracts.networking.client;
 
+import api.common.GameClient;
+import thederpgamer.contracts.ConfigManager;
 import thederpgamer.contracts.GUIManager;
-import thederpgamer.contracts.data.contract.ClientContractData;
+import thederpgamer.contracts.data.contract.Contract;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,38 +15,30 @@ import java.util.HashMap;
  */
 public class ClientDataManager {
 
-	private static final HashMap<String, ClientContractData> clientData = new HashMap<>();
+	private static final HashMap<String, Contract> clientData = new HashMap<>();
 
 	public static void updateClientTimer(String contractUID, long timeRemaining) {
-		ClientContractData contract = clientData.get(contractUID);
+		Contract contract = clientData.get(contractUID);
 		if(contract != null) {
-			contract.setTimeRemaining(timeRemaining);
+			contract.getClaimants().put(GameClient.getClientPlayerState().getName(), timeRemaining);
 			GUIManager.getInstance().contractsTab.flagForRefresh();
 		}
 	}
 
-	public static ArrayList<ClientContractData> getClaimedContracts() {
-		ArrayList<ClientContractData> claimedContracts = new ArrayList<>();
-		for(ClientContractData contract : clientData.values()) {
-			if(contract.isClaimed()) claimedContracts.add(contract);
+	public static ArrayList<Contract> getClaimedContracts() {
+		ArrayList<Contract> claimedContracts = new ArrayList<>();
+		for(Contract contract : clientData.values()) {
+			if(contract.getClaimants().containsKey(GameClient.getClientPlayerState().getName())) claimedContracts.add(contract);
 		}
 		return claimedContracts;
 	}
 
-	public static void setCanComplete(String contractUID) {
-		ClientContractData contract = clientData.get(contractUID);
-		if(contract != null) {
-			contract.setCanComplete(true);
-			GUIManager.getInstance().contractsTab.flagForRefresh();
-		}
-	}
-
-	public static void updateClientData(String contractUID, ClientContractData data) {
+	public static void updateClientData(String contractUID, Contract data) {
 		clientData.put(contractUID, data);
 		GUIManager.getInstance().contractsTab.flagForRefresh();
 	}
 
-	public static void addContract(ClientContractData contractData) {
+	public static void addContract(Contract contractData) {
 		clientData.put(contractData.getUID(), contractData);
 		if(GUIManager.getInstance().contractsTab != null) GUIManager.getInstance().contractsTab.flagForRefresh();
 	}
@@ -54,26 +48,26 @@ public class ClientDataManager {
 		GUIManager.getInstance().contractsTab.flagForRefresh();
 	}
 
-	public static ClientContractData getClientData(String contractUID) {
+	public static Contract getClientData(String contractUID) {
 		return clientData.get(contractUID);
 	}
 
-	public static HashMap<String, ClientContractData> getClientData() {
+	public static HashMap<String, Contract> getClientData() {
 		return clientData;
 	}
 
 	public static void claimContract(String uid) {
-		ClientContractData contract = clientData.get(uid);
+		Contract contract = clientData.get(uid);
 		if(contract != null) {
-			contract.setClaimed(true);
+			contract.getClaimants().put(GameClient.getClientPlayerState().getName(), ConfigManager.getMainConfig().getLong("contract-timer-max"));
 			ClientActionType.CLAIM_CONTRACT.send(uid);
 			GUIManager.getInstance().contractsTab.flagForRefresh();
 		}
 	}
 
 	public static boolean canCompleteAny() {
-		for(ClientContractData contract : clientData.values()) {
-			if(contract.canComplete()) return true;
+		for(Contract contract : clientData.values()) {
+			if(contract.canComplete(GameClient.getClientPlayerState())) return true;
 		}
 		return false;
 	}

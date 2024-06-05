@@ -23,6 +23,11 @@ public class PlayerContractsDialog extends PlayerInput {
 		panel.setCallback(this);
 	}
 
+	@Override
+	public void activate() {
+		GameClient.getClientState().getWorldDrawer().getGuiDrawer().getPlayerInteractionManager().deactivateAll();
+		super.activate();
+	}
 
 	@Override
 	public PlayerContractsPanel getInputPanel() {

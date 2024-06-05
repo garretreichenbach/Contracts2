@@ -53,6 +53,7 @@ public class ItemsContract extends Contract {
         if(player.isAdmin() && player.isUseCreativeMode()) return true;
         else {
             Inventory playerInventory = player.getInventory();
+            if(playerInventory.isLockedInventory()) return false;
             int count = InventoryUtils.getItemAmount(playerInventory, target.getId());
             return count >= target.getAmount();
         }

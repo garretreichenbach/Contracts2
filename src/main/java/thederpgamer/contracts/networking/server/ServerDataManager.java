@@ -70,6 +70,10 @@ public class ServerDataManager {
 	public static void addOrUpdatePlayerData(PlayerData playerData) {
 		removePlayerData(playerData);
 		HashMap<String, PlayerData> playerDataMap = getPlayerDataMap();
+		if(GameServer.getServerState().getPlayerStatesByName().containsKey(playerData.name)) {
+			PlayerState playerState = GameServer.getServerState().getPlayerStatesByName().get(playerData.name);
+			playerData.factionID = playerState.getFactionId();
+		}
 		playerDataMap.put(playerData.name, playerData);
 		savePlayerData(playerDataMap);
 	}
@@ -227,8 +231,8 @@ public class ServerDataManager {
 		new StarRunnable() {
 			@Override
 			public void run() {
-				if(contract.getClaimants().containsKey(player)) {
-					if(contract.getClaimants().get(player) >= ConfigManager.getMainConfig().getInt("contract-timer-max")) {
+				if(contract.getClaimants().containsKey(player.name)) {
+					if(contract.getClaimants().get(player.name) >= ConfigManager.getMainConfig().getInt("contract-timer-max")) {
 						try {
 							timeoutContract(contract, player);
 						} catch(PlayerNotFountException e) {
@@ -236,16 +240,12 @@ public class ServerDataManager {
 						}
 						cancel();
 					} else {
-						if(contract.canComplete(getPlayerState(player)))
-							ServerActionType.SET_CAN_COMPLETE.send(getPlayerState(player), contract.getUID());
-						else {
-							contract.getClaimants().put(player.name, contract.getClaimants().get(player) + 10);
-							ServerActionType.UPDATE_CONTRACT_TIMER.send(getPlayerState(player), contract.getUID(), contract.getClaimants().get(player));
-						}
+						contract.getClaimants().put(player.name, contract.getClaimants().get(player.name) + 30);
+						ServerActionType.UPDATE_CONTRACT_TIMER.send(getPlayerState(player), contract.getUID(), contract.getClaimants().get(player.name));
 					}
 				}
 			}
-		}.runTimer(Contracts.getInstance(), 10);
+		}.runTimer(Contracts.getInstance(), 30);
 	}
 
 	public static PlayerState getPlayerState(PlayerData player) {
@@ -261,7 +261,7 @@ public class ServerDataManager {
 	public static void completeContract(PlayerData playerData, Contract contract) {
 		playerData.contracts.remove(contract.getUID());
 		addOrUpdatePlayerData(playerData);
-		addOrUpdateContract(contract);
+		removeContract(contract);
 		contract.onCompletion(getPlayerState(playerData));
 		//Todo: Maybe some sort of custom flavor message depending on the contract type and contractor
 		playerData.sendMail(contract.getContractor().getName(), "Contract Completion", "You have completed the contract \"" + contract.getName() + "\" and have been rewarded " + contract.getReward() + " credits!");

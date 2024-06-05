@@ -19,8 +19,7 @@ public enum ServerActionType {
     UPDATE_CONTRACT_TIMER(UpdateClientTimerPacket.class, String.class, Long.class),
     REMOVE_CONTRACT(RemoveContractPacket.class, String.class),
     SEND_CONTRACT(SendContractPacket.class, Contract.class),
-    SEND_CONTRACTS_LIST(SendContractsListPacket.class, ArrayList.class),
-    SET_CAN_COMPLETE(SetCanCompletePacket.class, String.class);
+    SEND_CONTRACTS_LIST(SendContractsListPacket.class, ArrayList.class);
 
     private final Class<? extends Packet> packetClass;
     private final Class<?>[] argClasses;

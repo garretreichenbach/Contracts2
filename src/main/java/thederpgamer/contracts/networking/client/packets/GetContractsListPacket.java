@@ -4,7 +4,6 @@ import api.network.Packet;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.schema.game.common.data.player.PlayerState;
-import thederpgamer.contracts.data.contract.ClientContractData;
 import thederpgamer.contracts.data.contract.Contract;
 import thederpgamer.contracts.networking.server.ServerActionType;
 import thederpgamer.contracts.networking.server.ServerDataManager;
@@ -36,10 +35,7 @@ public class GetContractsListPacket extends Packet {
 
     @Override
     public void processPacketOnServer(PlayerState playerState) {
-        ArrayList<ClientContractData> contractDataList = new ArrayList<>();
-        for(Contract contract : ServerDataManager.getAllContracts()) {
-            contractDataList.add(new ClientContractData(contract));
-        }
+	    ArrayList<Contract> contractDataList = new ArrayList<>(ServerDataManager.getAllContracts());
         ServerActionType.SEND_CONTRACTS_LIST.send(playerState, contractDataList);
     }
 }
