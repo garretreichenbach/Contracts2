@@ -31,6 +31,7 @@ public class Contracts extends StarMod {
     @Override
     public void onServerCreated(ServerInitializeEvent event) {
         if(ConfigManager.getMainConfig().getBoolean("auto-generate-contracts")) {
+            NPCContractManager.initialize();
             (new StarRunnable() {
                 @Override
                 public void run() {

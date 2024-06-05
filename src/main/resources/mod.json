@@ -2,12 +2,12 @@
   "name": "Contracts",
   "author": "TheDerpGamer",
   "description": "Adds completable contracts for player and faction interaction.",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "starmade_version": "0.203.165",
   "client_mod": false,
   "server_mod": false,
   "main_class": "thederpgamer.contracts.Contracts",
-  "smd_resource_id": 9999,
+  "smd_resource_id": 8637,
   "dependencies": [
     -1
   ],

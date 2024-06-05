@@ -66,10 +66,7 @@ public class EventManager {
 		StarLoader.registerListener(PlayerSpawnEvent.class, new Listener<PlayerSpawnEvent>() {
 			@Override
 			public void onEvent(final PlayerSpawnEvent event) {
-				final ArrayList<Contract> contractDataList = new ArrayList<>();
-				for(Contract contract : ServerDataManager.getAllContracts()) {
-					contractDataList.add(contract);
-				}
+				final ArrayList<Contract> contractDataList = new ArrayList<>(ServerDataManager.getAllContracts());
 				if(event.getPlayer().getOwnerState() != null) {
 					ServerActionType.SEND_CONTRACTS_LIST.send(event.getPlayer().getOwnerState(), contractDataList);
 				} else { //Wait for player to spawn

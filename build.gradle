@@ -5,7 +5,7 @@ plugins {
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
-version '2.0.0'
+version '2.0.1'
 
 def modName = 'Contracts'
 def starmadeDirectory = 'C:/Program Files (x86)/Steam/steamapps/common/StarMade/StarMade/' //Change this to your StarMade directory

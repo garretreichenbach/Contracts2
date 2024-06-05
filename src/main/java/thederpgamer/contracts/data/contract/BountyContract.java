@@ -85,4 +85,8 @@ public class BountyContract extends Contract {
     public void setKilledTarget(boolean killedTarget) {
         this.killedTarget = killedTarget;
     }
+
+    public boolean isTargetNPC() {
+        return target.contains("NPC");
+    }
 }
