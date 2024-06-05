@@ -47,7 +47,7 @@ public class ListContractsCommand implements CommandInterface {
 
     @Override
     public boolean onCommand(PlayerState sender, String[] args) {
-        if(args == null || args.length == 0) listContracts(sender, ServerDataManager.getPlayerData(sender));
+        if(args == null || args.length == 0) listContracts(sender, ServerDataManager.getPlayerData(sender.getName()));
         else {
             PlayerData target = ServerDataManager.getPlayerData(args[0]);
             if(target == null) PlayerUtils.sendMessage(sender, "Player " + args[0] + " doesn't exist!");
@@ -86,12 +86,12 @@ public class ListContractsCommand implements CommandInterface {
                 }
                 for(Contract contract : ServerDataManager.getPlayerContracts(target)) {
                     if(types.contains(contract.getContractType())) {
-                        contractList.add(contract.getName().trim() + "[" + contract.getName() + "] - $" + contract.getReward() + " | " + contract.getContractorName().trim());
+                        contractList.add(contract.getName().trim() + "[" + contract.getUID() + "] - $" + contract.getReward() + " | " + contract.getContractorName().trim());
                     }
                 }
             } else {
                 for(Contract contract : ServerDataManager.getPlayerContracts(target)) {
-                    contractList.add(contract.getName().trim() + "[" + contract.getName() + "] - $" + contract.getReward() + " | " + contract.getContractorName().trim());
+                    contractList.add(contract.getName().trim() + "[" + contract.getUID() + "] - $" + contract.getReward() + " | " + contract.getContractorName().trim());
                 }
             }
 

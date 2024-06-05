@@ -68,7 +68,7 @@ public class NewContractDialog extends PlayerInput {
                                 String name = panel.getName();
                                 int bountyAmount = panel.getReward();
                                 PlayerData playerData = ServerDataManager.getPlayerData(name);
-                                PlayerData currentPlayerData = ServerDataManager.getPlayerData(currentPlayer);
+                                PlayerData currentPlayerData = ServerDataManager.getPlayerData(currentPlayer.getName());
                                 if(playerData == null) {
                                     (new SimplePopup(getState(), "Cannot Add Bounty", "Player " + name + " does not exist!")).activate();
                                 } else {
@@ -79,7 +79,7 @@ public class NewContractDialog extends PlayerInput {
                                     } else if(ServerDataManager.getFactionAllies(currentPlayerData.factionID).contains(playerData.factionID) && !currentPlayer.isAdmin()) {
                                         (new SimplePopup(getState(), "Cannot Add Bounty", "You can't put a bounty on a member of an allied faction!")).activate();
                                     } else {
-                                        Contract contract = new BountyContract(currentPlayer.getFactionId(), "Kill " + name, bountyAmount, playerData.name);
+                                        BountyContract contract = new BountyContract(currentPlayer.getFactionId(), "Kill " + name, bountyAmount, playerData.name);
                                         ClientActionType.CREATE_CONTRACT.send(contract);
                                         currentPlayer.setCredits(currentPlayer.getCredits() - contract.getReward());
                                         deactivate();
@@ -92,7 +92,7 @@ public class NewContractDialog extends PlayerInput {
                                     (new SimplePopup(getState(), "Cannot Add Contract", "The amount must be above 0!")).activate();
                                 } else {
                                     ItemStack itemStack = new ItemStack(panel.getSelectedBlockType().id, count);
-                                    Contract contract = new ItemsContract(currentPlayer.getFactionId(), "Obtain x" + count + " " + itemStack.getElementInfo().getName(), panel.getReward(), itemStack);
+                                    ItemsContract contract = new ItemsContract(currentPlayer.getFactionId(), "Obtain x" + count + " " + itemStack.getElementInfo().getName(), panel.getReward(), itemStack);
                                     ClientActionType.CREATE_CONTRACT.send(contract);
                                     currentPlayer.setCredits(currentPlayer.getCredits() - contract.getReward());
                                     deactivate();

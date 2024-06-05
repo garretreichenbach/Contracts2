@@ -46,7 +46,7 @@ public class ClientDataManager {
 
 	public static void addContract(ClientContractData contractData) {
 		clientData.put(contractData.getUID(), contractData);
-		GUIManager.getInstance().contractsTab.flagForRefresh();
+		if(GUIManager.getInstance().contractsTab != null) GUIManager.getInstance().contractsTab.flagForRefresh();
 	}
 
 	public static void removeClientData(String contractUID) {

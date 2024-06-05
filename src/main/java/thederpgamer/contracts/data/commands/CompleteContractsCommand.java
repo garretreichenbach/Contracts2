@@ -50,7 +50,7 @@ public class CompleteContractsCommand implements CommandInterface {
             if(args.length > 1) {
                 if(ServerDataManager.getPlayerData(args[1]) != null) target = ServerDataManager.getPlayerData(args[1]);
                 else PlayerUtils.sendMessage(sender, "Player " + args[1] + " doesn't exist!");
-            } else target = ServerDataManager.getPlayerData(sender);
+            } else target = ServerDataManager.getPlayerData(sender.getName());
             if(args[0].equalsIgnoreCase("all") || args[0].equalsIgnoreCase("*")) {
                 completeContracts(sender, target, ServerDataManager.getPlayerContracts(target).toArray(new Contract[0]));
             } else {

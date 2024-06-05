@@ -86,7 +86,7 @@ public class PurgeContractsCommand implements CommandInterface  {
             }
         } else for(i = 0; i < amount && i < ServerDataManager.getAllContracts().size(); i ++) toRemove.add(ServerDataManager.getAllContracts().get(i));
 
-        for(Contract contract : toRemove) ServerDataManager.removeContract(contract.getUID());
+        for(Contract contract : toRemove) ServerDataManager.removeContract(contract);
         PersistentObjectUtil.save(Contracts.getInstance().getSkeleton());
         PlayerUtils.sendMessage(sender, "Removed " + (i + 1) + " thederpgamer.contracts from database.");
     }

@@ -2,8 +2,8 @@ package thederpgamer.contracts.data.contract;
 
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
+import org.json.JSONObject;
 import org.schema.game.common.data.player.PlayerState;
-import thederpgamer.contracts.networking.server.ServerDataManager;
 
 import java.io.IOException;
 
@@ -15,18 +15,25 @@ import java.io.IOException;
 public class BountyContract extends Contract {
 
     private boolean killedTarget;
+    private String target;
 
     public BountyContract(int contractorID, String name, int reward, String target) {
-        super(contractorID, name, reward, target);
+        super(contractorID, name, reward);
+        this.target = target;
     }
 
     public BountyContract(PacketReadBuffer packetReadBuffer) throws IOException {
         super(packetReadBuffer);
     }
 
+    public BountyContract(JSONObject json) {
+        super(json);
+        fromJSON(json);
+    }
+
     @Override
     public boolean canComplete(PlayerState player) {
-        return ((player.isAdmin() && player.isUseCreativeMode()) || (!target.equals(player.getName()) && killedTarget)) && claimants.containsKey(ServerDataManager.getPlayerData(player));
+        return ((player.isAdmin() && player.isUseCreativeMode()) || (!target.equals(player.getName()) && killedTarget)) && claimants.containsKey(player.getName());
     }
 
     @Override
@@ -48,12 +55,27 @@ public class BountyContract extends Contract {
 
     @Override
     public void writeToBuffer(PacketWriteBuffer writeBuffer) throws IOException {
-        writeBuffer.writeString((String) target);
+        writeBuffer.writeString(target);
         writeBuffer.writeBoolean(killedTarget);
     }
 
+    @Override
+    public void fromJSON(JSONObject json) {
+        super.fromJSON(json);
+        target = json.getString("target");
+        killedTarget = json.getBoolean("killedTarget");
+    }
+
+    @Override
+    public JSONObject toJSON() {
+        JSONObject json = super.toJSON();
+        json.put("target", target);
+        json.put("killedTarget", killedTarget);
+        return json;
+    }
+
     public String getTarget() {
-        return (String) target;
+        return target;
     }
 
     public boolean hasKilledTarget() {

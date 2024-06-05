@@ -42,7 +42,7 @@ public class CompleteContractPacket extends Packet {
     @Override
     public void processPacketOnServer(PlayerState playerState) {
         Contract contract = ServerDataManager.getContractFromId(contractUID);
-        if(contract != null) ServerDataManager.completeContract(ServerDataManager.getPlayerData(playerState), contract);
+        if(contract != null) ServerDataManager.completeContract(ServerDataManager.getPlayerData(playerState.getName()), contract);
         else throw new NullPointerException("Contract with UID \"" + contractUID + "\" does not exist");
     }
 }
