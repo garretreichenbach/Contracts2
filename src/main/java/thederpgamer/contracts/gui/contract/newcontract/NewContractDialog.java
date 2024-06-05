@@ -1,7 +1,6 @@
 package thederpgamer.contracts.gui.contract.newcontract;
 
 import api.common.GameClient;
-import api.common.GameCommon;
 import api.utils.game.inventory.ItemStack;
 import api.utils.gui.SimplePopup;
 import org.schema.game.client.controller.PlayerInput;
@@ -24,9 +23,9 @@ public class NewContractDialog extends PlayerInput {
     private final NewContractPanel panel;
     private Contract.ContractType selectedType;
 
-    public NewContractDialog(GameClientState gameClientState, int contractorId) {
+    public NewContractDialog(GameClientState gameClientState) {
         super(gameClientState);
-        panel = new NewContractPanel(getState(), this, GameCommon.getGameState().getFactionManager().getFaction(contractorId));
+        panel = new NewContractPanel(getState(), this);
         panel.onInit();
         selectedType = Contract.ContractType.BOUNTY;
     }

@@ -5,7 +5,10 @@ import api.network.Packet;
 import api.network.packets.PacketUtil;
 import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.contracts.Contracts;
+import thederpgamer.contracts.data.contract.Contract;
 import thederpgamer.contracts.networking.server.packets.*;
+
+import java.util.ArrayList;
 
 /**
  * [Description]
@@ -15,8 +18,8 @@ import thederpgamer.contracts.networking.server.packets.*;
 public enum ServerActionType {
     UPDATE_CONTRACT_TIMER(UpdateClientTimerPacket.class, String.class, Long.class),
     REMOVE_CONTRACT(RemoveContractPacket.class, String.class),
-    SEND_CONTRACT(SendContractPacket.class, String.class, String.class, Integer.class, Long.class),
-    SEND_CONTRACTS_LIST(SendContractsListPacket.class),
+    SEND_CONTRACT(SendContractPacket.class, Contract.class),
+    SEND_CONTRACTS_LIST(SendContractsListPacket.class, ArrayList.class),
     SET_CAN_COMPLETE(SetCanCompletePacket.class, String.class);
 
     private final Class<? extends Packet> packetClass;
@@ -32,7 +35,7 @@ public enum ServerActionType {
         try {
             PacketUtil.sendPacket(target, packetClass.getConstructor(argClasses).newInstance(args));
         } catch(Exception exception) {
-            Contracts.getInstance().logException("An error occurred while executing client action: " + name(), exception);
+            Contracts.getInstance().logException("An error occurred while executing server action: " + name(), exception);
         }
     }
 

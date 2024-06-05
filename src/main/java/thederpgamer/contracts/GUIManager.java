@@ -1,9 +1,8 @@
 package thederpgamer.contracts;
 
 import api.listener.events.gui.MainWindowTabAddEvent;
-import api.utils.gui.ModGUIHandler;
+import org.schema.schine.common.language.Lng;
 import thederpgamer.contracts.gui.contract.contractlist.ContractsTab;
-import thederpgamer.contracts.gui.contract.playercontractlist.PlayerContractsControlManager;
 
 /**
  * [Description]
@@ -19,23 +18,14 @@ public class GUIManager {
     }
 
     public ContractsTab contractsTab;
-    public PlayerContractsControlManager playerContractsControlManager;
 
-    public static void initialize(Contracts mod) {
+    public static void initialize() {
         instance = new GUIManager();
     }
 
-    public void toggleContractsControlManager(boolean active) {
-        if(playerContractsControlManager == null) {
-            playerContractsControlManager = new PlayerContractsControlManager(null);
-            ModGUIHandler.registerNewControlManager(null, playerContractsControlManager);
-        }
-        playerContractsControlManager.setActive(active);
-    }
-
     public void createContractsShopTab(MainWindowTabAddEvent event) {
-        if(event.getTitle().equals("SHOP") && contractsTab == null) {
-            contractsTab = new ContractsTab(event.getWindow().getState(), event.getWindow());
+        if(event.getTitle().equals(Lng.str("SHOP")) && contractsTab == null) {
+            contractsTab = new ContractsTab(event.getWindow());
             contractsTab.onInit();
             event.getWindow().getTabs().add(contractsTab);
         }

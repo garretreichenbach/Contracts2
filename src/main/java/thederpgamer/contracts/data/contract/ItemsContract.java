@@ -6,6 +6,7 @@ import api.utils.game.inventory.InventoryUtils;
 import api.utils.game.inventory.ItemStack;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.inventory.Inventory;
+import thederpgamer.contracts.networking.server.ServerDataManager;
 
 import java.io.IOException;
 
@@ -26,6 +27,7 @@ public class ItemsContract extends Contract {
 
     @Override
     public boolean canComplete(PlayerState player) {
+        if(!claimants.containsKey(ServerDataManager.getPlayerData(player))) return false;
         if(player.isAdmin() && player.isUseCreativeMode()) return true;
         else {
             Inventory playerInventory = player.getInventory();

@@ -8,7 +8,6 @@ import org.schema.game.client.view.gui.advanced.tools.*;
 import org.schema.game.common.controller.BlockTypeSearchRunnableManager;
 import org.schema.game.common.data.element.ElementInformation;
 import org.schema.game.common.data.element.ElementKeyMap;
-import org.schema.game.common.data.player.faction.Faction;
 import org.schema.schine.common.TextCallback;
 import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.settings.PrefixNotFoundException;
@@ -18,6 +17,7 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.GUIActivatableTextBar;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIHorizontalArea;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIHorizontalButtonTablePane;
 import org.schema.schine.input.InputState;
+import thederpgamer.contracts.data.contract.Contract;
 import thederpgamer.contracts.networking.server.ServerDataManager;
 
 import java.util.ArrayList;
@@ -26,7 +26,6 @@ import java.util.List;
 
 public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRunnableManager.BlockTypeSearchProgressCallback {
 
-    private final GUIAncor content;
     private final GUICallback guiCallback;
     private GUIActivatableTextBar rewardInput;
     private GUIActivatableTextBar nameInput;
@@ -39,10 +38,9 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
     private String curText;
     private GUIHorizontalButtonTablePane buttonPane;
 
-    public NewContractPanel(InputState inputState, GUICallback guiCallback, Faction contractor) {
+    public NewContractPanel(InputState inputState, GUICallback guiCallback) {
         super("NewContractPanel", inputState, guiCallback, "New Contract", "");
         this.guiCallback = guiCallback;
-        content = new GUIAncor(getState(), 360, 450);
         curText = "";
     }
 
@@ -58,7 +56,6 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
         try {
             return Integer.parseInt(rewardInput.getText());
         } catch(Exception e) {
-            e.printStackTrace();
             return 0;
         }
     }
@@ -67,7 +64,6 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
         try {
             return Integer.parseInt(itemInput.getText());
         } catch(Exception e) {
-            e.printStackTrace();
             return 0;
         }
     }
@@ -80,15 +76,15 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
         curText = "";
         if(dropdown != null) {
             dropdown.cleanUp();
-            content.detach(dropdown);
+            getContent().detach(dropdown);
         }
         if(display != null) {
             display.cleanUp();
-            content.detach(display);
+            getContent().detach(display);
         }
         if(textBar != null) {
             textBar.cleanUp();
-            content.detach(textBar);
+            getContent().detach(textBar);
         }
 
         addDropdown(new DropdownResult() {
@@ -123,7 +119,7 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
 
             @Override
             public Collection<? extends GUIElement> getDropdownElements(GUIElement guiElement) {
-                blockElements = getResourceElements();
+                blockElements = getProductionElements();
                 return blockElements;
             }
 
@@ -215,7 +211,7 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
         });
 
         if(itemInput == null) {
-            itemInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.MEDIUM, 10, 1, "COUNT", content, new TextCallback() {
+            itemInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.MEDIUM, 10, 1, "COUNT", getContent(), new TextCallback() {
                 @Override
                 public String[] getCommandPrefixes() {
                     return null;
@@ -244,7 +240,7 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
             itemInput.onInit();
         }
         itemInput.setPos(0, 30, 0);
-        content.attach(itemInput);
+        getContent().attach(itemInput);
         itemInput.draw();
         if(nameInput != null) {
             nameInput.setText("");
@@ -253,7 +249,7 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
         }
 
         if(rewardInput == null) {
-            rewardInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.MEDIUM, 10, 1, "REWARD", content, new TextCallback() {
+            rewardInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.MEDIUM, 10, 1, "REWARD", getContent(), new TextCallback() {
                 @Override
                 public String[] getCommandPrefixes() {
                     return null;
@@ -281,7 +277,7 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
             }, null);
             rewardInput.onInit();
             rewardInput.setPos(0, 60, 0);
-            content.attach(rewardInput);
+            getContent().attach(rewardInput);
         }
 
         rewardInput.setText("");
@@ -292,15 +288,15 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
         curText = "";
         if(dropdown != null) {
             dropdown.cleanUp();
-            content.detach(dropdown);
+            getContent().detach(dropdown);
         }
         if(display != null) {
             display.cleanUp();
-            content.detach(display);
+            getContent().detach(display);
         }
         if(textBar != null) {
             textBar.cleanUp();
-            content.detach(textBar);
+            getContent().detach(textBar);
         }
 
         addDropdown(new DropdownResult() {
@@ -426,7 +422,7 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
         });
 
         if(itemInput == null) {
-            itemInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.MEDIUM, 10, 1, "COUNT", content, new TextCallback() {
+            itemInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.MEDIUM, 10, 1, "COUNT", getContent(), new TextCallback() {
                 @Override
                 public String[] getCommandPrefixes() {
                     return null;
@@ -455,7 +451,7 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
             itemInput.onInit();
         }
         itemInput.setPos(0, 30, 0);
-        content.attach(itemInput);
+        getContent().attach(itemInput);
         itemInput.draw();
         if(nameInput != null) {
             nameInput.setText("");
@@ -464,7 +460,7 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
         }
 
         if(rewardInput == null) {
-            rewardInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.MEDIUM, 10, 1, "REWARD", content, new TextCallback() {
+            rewardInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.MEDIUM, 10, 1, "REWARD", getContent(), new TextCallback() {
                 @Override
                 public String[] getCommandPrefixes() {
                     return null;
@@ -492,7 +488,7 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
             }, null);
             rewardInput.onInit();
             rewardInput.setPos(0, 60, 0);
-            content.attach(rewardInput);
+            getContent().attach(rewardInput);
         }
 
         rewardInput.setText("");
@@ -500,7 +496,7 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
 
     public void drawBountyPanel() {
         if(nameInput == null) {
-            nameInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.MEDIUM, 30, 1, "NAME", content, new TextCallback() {
+            nameInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.MEDIUM, 30, 1, "NAME", getContent(), new TextCallback() {
                 @Override
                 public String[] getCommandPrefixes() {
                     return null;
@@ -529,7 +525,7 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
             nameInput.onInit();
         }
         nameInput.setPos(0, 30, 0);
-        content.attach(nameInput);
+        getContent().attach(nameInput);
         nameInput.draw();
         if(itemInput != null) {
             itemInput.setText("");
@@ -539,19 +535,19 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
 
         if(dropdown != null) {
             dropdown.cleanUp();
-            content.detach(dropdown);
+            getContent().detach(dropdown);
         }
         if(display != null) {
             display.cleanUp();
-            content.detach(display);
+            getContent().detach(display);
         }
         if(textBar != null) {
             textBar.cleanUp();
-            content.detach(textBar);
+            getContent().detach(textBar);
         }
 
         if(rewardInput == null) {
-            rewardInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.MEDIUM, 10, 1, "REWARD", content, new TextCallback() {
+            rewardInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.MEDIUM, 10, 1, "REWARD", getContent(), new TextCallback() {
                 @Override
                 public String[] getCommandPrefixes() {
                     return null;
@@ -579,7 +575,7 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
             }, null);
             rewardInput.onInit();
             rewardInput.setPos(0, 60, 0);
-            content.attach(rewardInput);
+            getContent().attach(rewardInput);
         }
 
         rewardInput.setText("");
@@ -587,30 +583,30 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
 
     @Override
     public float getHeight() {
-        return content.getHeight();
+        return getContent().getHeight();
     }
 
     @Override
     public float getWidth() {
-        return content.getWidth();
+        return getContent().getWidth();
     }
 
     private void addDropdown(DropdownResult result) {
-        dropdown = new GUIAdvDropdown(getState(), content, result);
+        dropdown = new GUIAdvDropdown(getState(), getContent(), result);
         dropdown.setPos(0, 120, 0);
-        content.attach(dropdown);
+        getContent().attach(dropdown);
     }
 
     private void addBlockDisplay(BlockDisplayResult displayResult) {
-        display = new GUIAdvBlockDisplay(getState(), content, displayResult);
+        display = new GUIAdvBlockDisplay(getState(), getContent(), displayResult);
         display.setPos(0, 120, 0);
-        content.attach(display);
+        getContent().attach(display);
     }
 
     private void addTextBar(TextBarResult textBarResult) {
-        textBar = new GUIAdvTextBar(getState(), content, textBarResult);
+        textBar = new GUIAdvTextBar(getState(), getContent(), textBarResult);
         textBar.setPos(0, 90, 0);
-        content.attach(textBar);
+        getContent().attach(textBar);
     }
 
     @Override
@@ -622,7 +618,7 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
     public void onInit() {
         super.onInit();
         setPos(0, 0, 0);
-        (buttonPane = new GUIHorizontalButtonTablePane(getState(), 3, 1, getContent())).onInit();
+        (buttonPane = new GUIHorizontalButtonTablePane(getState(), Contract.ContractType.values().length - 1, 1, getContent())).onInit();
         GUIActivationCallback activationCallback = new GUIActivationCallback() {
             @Override
             public boolean isVisible(InputState inputState) {
@@ -636,12 +632,11 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
         };
 
         buttonPane.addButton(0, 0, "BOUNTY", GUIHorizontalArea.HButtonColor.BLUE, guiCallback, activationCallback).setUserPointer("BOUNTY");
-        buttonPane.addButton(2, 0, "ITEMS", GUIHorizontalArea.HButtonColor.BLUE, guiCallback, activationCallback).setUserPointer("ITEMS");
+        buttonPane.addButton(1, 0, "ITEMS", GUIHorizontalArea.HButtonColor.BLUE, guiCallback, activationCallback).setUserPointer("ITEMS");
 
         buttonPane.setPos(0, 0, 0);
-        content.attach(buttonPane);
-        getContent().attach(content);
-        background.setWidth(buttonPane.getWidth());
+        getContent().attach(buttonPane);
+        background.setWidth(getWidth());
     }
 
     private ArrayList<ElementInformation> getResourcesFilter() {
@@ -658,7 +653,7 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
 
         for(ElementInformation elementInfo : getResourcesFilter()) {
 
-            GUIAncor anchor = new GUIAncor(gameClientState, 300.0F, 26.0F);
+            GUIAncor anchor = new GUIAncor(gameClientState, getWidth(), 26.0F);
             elementList.add(anchor);
             GUITextOverlay textOverlay = new GUITextOverlay(100, 26, FontLibrary.getBoldArial12White(), gameClientState);
 
@@ -680,7 +675,7 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
 
         for(ElementInformation elementInfo : getProductionFilter()) {
 
-            GUIAncor anchor = new GUIAncor(gameClientState, 300.0F, 26.0F);
+            GUIAncor anchor = new GUIAncor(gameClientState, getWidth(), 26.0F);
             elementList.add(anchor);
             GUITextOverlay textOverlay = new GUITextOverlay(100, 26, FontLibrary.getBoldArial12White(), gameClientState);
 

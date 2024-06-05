@@ -20,8 +20,6 @@ public abstract class Contract {
     protected HashMap<PlayerData, Long> claimants = new HashMap<>();
     protected Object target;
     protected String uid;
-    protected int timer;
-    protected boolean finished;
 
     public Contract(int contractorID, String name, int reward, Object target) {
         this.name = name;
@@ -31,8 +29,6 @@ public abstract class Contract {
         uid = UUID.randomUUID().toString();
         uid = uid.substring(0, uid.indexOf('-'));
         claimants = new HashMap<>();
-        timer = -1;
-        finished = false;
     }
 
     protected Contract(PacketReadBuffer readBuffer) throws IOException {
@@ -40,8 +36,6 @@ public abstract class Contract {
         contractorID = readBuffer.readInt();
         reward = readBuffer.readInt();
         uid = readBuffer.readString();
-        timer = readBuffer.readInt();
-        finished = readBuffer.readBoolean();
         int claimantsSize = readBuffer.readInt();
         for(int i = 0; i < claimantsSize; i++) {
             PlayerData playerData = new PlayerData(readBuffer);
@@ -63,14 +57,6 @@ public abstract class Contract {
         }
     }
 
-    public boolean isFinished() {
-        return finished;
-    }
-
-    public void setFinished(boolean finished) {
-        this.finished = finished;
-    }
-
     public HashMap<PlayerData, Long> getClaimants() {
         return claimants;
     }
@@ -80,10 +66,9 @@ public abstract class Contract {
     }
 
     public Faction getContractor() {
-        if(contractorID != 0) {
-            return GameCommon.getGameState().getFactionManager().getFaction(contractorID);
-        } else {
-            ServerDataManager.removeContract(this);
+        if(GameCommon.getGameState().getFactionManager().existsFaction(contractorID)) return GameCommon.getGameState().getFactionManager().getFaction(contractorID);
+        else {
+            ServerDataManager.removeContract(uid);
             return null;
         }
     }
@@ -92,24 +77,8 @@ public abstract class Contract {
         return (contractorID != 0) ? getContractor().getName() : "Non-Aligned";
     }
 
-    public int getTimer() {
-        return timer;
-    }
-
-    public void setTimer(int timer) {
-        this.timer = timer;
-    }
-
     public int getReward() {
         return reward;
-    }
-
-    public Object getTarget() {
-        return target;
-    }
-
-    public void setTarget(Object target) {
-        this.target = target;
     }
 
     public String getUID() {
@@ -132,8 +101,6 @@ public abstract class Contract {
         packetWriteBuffer.writeInt(contractorID);
         packetWriteBuffer.writeInt(reward);
         packetWriteBuffer.writeString(uid);
-        packetWriteBuffer.writeInt(timer);
-        packetWriteBuffer.writeBoolean(finished);
         packetWriteBuffer.writeInt(claimants.size());
         for(PlayerData playerData : claimants.keySet()) {
             playerData.writeToBuffer(packetWriteBuffer);
@@ -146,6 +113,7 @@ public abstract class Contract {
         ALL("All"),
         BOUNTY("Bounty"),
         ITEMS("Items");
+        //ESCORT("Escort");
 
         public final String displayName;
 

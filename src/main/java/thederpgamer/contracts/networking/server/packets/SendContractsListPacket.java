@@ -17,7 +17,7 @@ import java.util.ArrayList;
  */
 public class SendContractsListPacket extends Packet {
 
-    private ArrayList<ClientContractData> contractDataList;
+    private ArrayList<ClientContractData> contractDataList = new ArrayList<>();
 
     public SendContractsListPacket() {}
 
@@ -28,7 +28,6 @@ public class SendContractsListPacket extends Packet {
     @Override
     public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
         int size = packetReadBuffer.readInt();
-        contractDataList = new ArrayList<>();
         for(int i = 0; i < size; i++) contractDataList.add(new ClientContractData(packetReadBuffer));
     }
 

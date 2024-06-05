@@ -101,68 +101,51 @@ public class ServerDataManager {
     }
 
     /**
-     * Locates any existing thederpgamer.contracts matching the updated contract's id and replaces them with the updated version.
+     * Removes a contract with the specified UID from the list of contracts.
      *
-     * @param contract The updated Contract.
+     * @param UID The UID of the contract to remove.
      */
-    public static void updateContract(Contract contract) {
-        ArrayList<Object> objectList = PersistentObjectUtil.getObjects(instance, Contract.class);
-        ArrayList<Contract> toRemove = new ArrayList<>();
-        for(Object contractObject : objectList) {
-            Contract c = (Contract) contractObject;
-            if(Objects.equals(c.getUID(), contract.getUID())) toRemove.add(c);
+    public static void removeContract(String UID) {
+        ArrayList<Contract> contracts = getAllContracts();
+        for(Contract contract : contracts) {
+            if(Objects.equals(contract.getUID(), UID)) PersistentObjectUtil.removeObject(instance, contract);
         }
-
-        for(Contract c : toRemove) PersistentObjectUtil.removeObject(instance, c);
-        PersistentObjectUtil.addObject(instance, contract);
+        PersistentObjectUtil.save(instance);
+        ServerActionType.REMOVE_CONTRACT.sendAll(UID);
     }
 
     /**
-     * Adds a new Contract to the database.
+     * Adds or updates a contract in the list of contracts.
      *
-     * @param contract The new contract.
+     * @param contract The contract to add or update.
      */
-    public static void addContract(Contract contract) {
-        ArrayList<Object> contractObjectList = PersistentObjectUtil.getObjects(instance, Contract.class);
-        ArrayList<Contract> toRemove = new ArrayList<>();
-        for(Object contractObject : contractObjectList) {
-            Contract c = (Contract) contractObject;
-            if(Objects.equals(c.getUID(), contract.getUID())) toRemove.add(c);
-        }
-        for(Contract c : toRemove) PersistentObjectUtil.removeObject(instance, c);
+    public static void addOrUpdateContract(Contract contract) {
+        removeContract(contract.getUID());
         PersistentObjectUtil.addObject(instance, contract);
+        PersistentObjectUtil.save(instance);
         ServerActionType.SEND_CONTRACT.sendAll(contract);
     }
 
     /**
-     * Removes any thederpgamer.contracts from the database that have the same id as the specified contract.
+     * Retrieves all contracts from the server.
      *
-     * @param contract The contract to remove.
-     */
-    public static void removeContract(Contract contract) {
-        ArrayList<Object> contractObjectList = PersistentObjectUtil.getObjects(instance, Contract.class);
-        ArrayList<Contract> toRemove = new ArrayList<>();
-        for(Object contractObject : contractObjectList) {
-            Contract c = (Contract) contractObject;
-            if(Objects.equals(c.getUID(), contract.getUID())) toRemove.add(c);
-        }
-        for(Contract c : toRemove) {
-            ServerActionType.REMOVE_CONTRACT.sendAll(c.getUID());
-            PersistentObjectUtil.removeObject(instance, c);
-        }
-        PersistentObjectUtil.save(instance);
-    }
-
-    /**
-     * Creates an ArrayList containing all Contracts in the database and returns it.
-     *
-     * @return An ArrayList containing all Contracts.
+     * @return An ArrayList of Contract objects representing all contracts.
      */
     public static ArrayList<Contract> getAllContracts() {
-        ArrayList<Object> contractObjectList = PersistentObjectUtil.getObjects(instance, Contract.class);
+        ArrayList<ItemsContract> itemsContracts = getItemsContracts();
+        ArrayList<BountyContract> bountyContracts = getBountyContracts();
         ArrayList<Contract> contracts = new ArrayList<>();
-        for(Object contractObject : contractObjectList) contracts.add((Contract) contractObject);
+        contracts.addAll(itemsContracts);
+        contracts.addAll(bountyContracts);
         return contracts;
+    }
+
+    public static ArrayList<ItemsContract> getItemsContracts() {
+        return PersistentObjectUtil.getCopyOfObjects(instance, ItemsContract.class);
+    }
+
+    public static ArrayList<BountyContract> getBountyContracts() {
+        return PersistentObjectUtil.getCopyOfObjects(instance, BountyContract.class);
     }
 
     /**
@@ -172,15 +155,19 @@ public class ServerDataManager {
      * @return An ArrayList containing the player's claimed thederpgamer.contracts.
      */
     public static ArrayList<Contract> getPlayerContracts(PlayerData playerData) {
-        ArrayList<Object> contractObjectList = PersistentObjectUtil.getObjects(instance, Contract.class);
-        ArrayList<Contract> contracts = new ArrayList<>();
-        for(Object contractObject : contractObjectList) {
-            Contract contract = (Contract) contractObject;
-            if(contract.getClaimants().containsKey(playerData)) contracts.add(contract);
+        ArrayList<Contract> playerContracts = new ArrayList<>();
+        for(Contract contract : getAllContracts()) {
+            if(playerData.contracts.contains(contract)) playerContracts.add(contract);
         }
-        return contracts;
+        return playerContracts;
     }
 
+    /**
+     * Gets a contract from the list of contracts based off its UID.
+     *
+     * @param contractId The UID of the contract.
+     * @return The contract with the specified UID. Returns null if no matching contract is found.
+     */
     public static Contract getContractFromId(String contractId) {
         for(Contract contract : getAllContracts()) {
             if(Objects.equals(contract.getUID(), contractId)) return contract;
@@ -209,25 +196,29 @@ public class ServerDataManager {
                     } else {
                         if(contract.canComplete(getPlayerState(player))) ServerActionType.SET_CAN_COMPLETE.send(getPlayerState(player), contract.getUID());
                         else {
-                            contract.getClaimants().put(player, contract.getClaimants().get(player) + 10000);
+                            contract.getClaimants().put(player, contract.getClaimants().get(player) + 30);
                             ServerActionType.UPDATE_CONTRACT_TIMER.send(getPlayerState(player), contract.getUID(), contract.getClaimants().get(player));
                         }
                     }
                 }
             }
-        }.runTimer(Contracts.getInstance(), 10000);
+        }.runTimer(Contracts.getInstance(), 30);
     }
 
     public static PlayerState getPlayerState(PlayerData player) {
         return GameServer.getServerState().getPlayerStatesByName().get(player.name);
     }
 
+    /**
+     * Completes a contract and rewards the player who completed it.
+     *
+     * @param playerData The player's data.
+     * @param contract   The contract being completed.
+     */
     public static void completeContract(PlayerData playerData, Contract contract) {
-        contract.setFinished(true);
         playerData.contracts.remove(contract);
         updatePlayerData(playerData);
-        updateContract(contract);
-        removeContract(contract);
+        addOrUpdateContract(contract);
         contract.onCompletion(getPlayerState(playerData));
         //Todo: Maybe some sort of custom flavor message depending on the contract type and contractor
         playerData.sendMail(contract.getContractor().getName(), "Contract Completion", "You have completed the contract \"" + contract.getName() + "\" and have been rewarded " + contract.getReward() + " credits!");
@@ -244,7 +235,7 @@ public class ServerDataManager {
         contract.getClaimants().remove(player);
         assert player != null;
         player.contracts.remove(contract);
-        updateContract(contract);
+        addOrUpdateContract(contract);
         updatePlayerData(player);
         player.sendMail(contract.getContractor().getName(), "Contract Cancellation", contract.getContractor().getName() + " has cancelled your contract because you took too long!");
     }
@@ -274,15 +265,18 @@ public class ServerDataManager {
                 int reward = (int) ((basePrice * amountInt) * 1.3);
                 randomContract = new ItemsContract(FactionManager.TRAIDING_GUILD_ID, contractName, reward, target);
                 break;
+                /*
             case BOUNTY: //Todo: Pick from a list of aggressive players rather than just random ones
                 ArrayList<PlayerState> playerStates = new ArrayList<>(GameServer.getServerState().getPlayerStatesByName().values());
-                PlayerState targetPlayer = playerStates.get(random.nextInt(playerStates.size() - 1) + 1);
+                if(playerStates.isEmpty()) return;
+                PlayerState targetPlayer = playerStates.get(random.nextInt(playerStates.size()));
                 contractName = "Kill " + targetPlayer.getName();
                 int bountyAmount = random.nextInt(10000 - 1000) + 1000;
                 randomContract = new BountyContract(FactionManager.TRAIDING_GUILD_ID, contractName, bountyAmount, targetPlayer.getName());
                 break;
+                 */
         }
-        addContract(randomContract);
+        if(randomContract != null) addOrUpdateContract(randomContract);
     }
 
     public static ArrayList<ElementInformation> getResourcesFilter() {
@@ -315,7 +309,7 @@ public class ServerDataManager {
             if(!contract.getClaimants().containsKey(playerData)) {
                 contract.getClaimants().put(playerData, 0L);
                 playerData.contracts.add(contract);
-                updateContract(contract);
+                addOrUpdateContract(contract);
                 updatePlayerData(playerData);
                 startContractTimer(contract, playerData);
             }
@@ -329,12 +323,16 @@ public class ServerDataManager {
             if(contract.getClaimants().containsKey(playerData)) {
                 contract.getClaimants().remove(playerData);
                 playerData.contracts.remove(contract);
-                updateContract(contract);
+                addOrUpdateContract(contract);
                 updatePlayerData(playerData);
             }
         }
     }
 
+    /**
+     * Cancels a contract and removes it from the list.
+     * @param contractUID The UID of the contract being cancelled.
+     */
     public static void cancelContract(String contractUID) {
         Contract contract = getContractFromId(contractUID);
         if(contract != null) {
@@ -342,14 +340,7 @@ public class ServerDataManager {
                 player.contracts.remove(contract);
                 updatePlayerData(player);
             }
-            removeContract(contract);
-        }
-    }
-
-    public static void createContract(PlayerState playerState, Contract contract) {
-        updateContract(contract);
-        for(PlayerState player : GameServer.getServerState().getPlayerStatesByName().values()) {
-            if(player != playerState) ServerActionType.SEND_CONTRACT.send(player, contract);
+            removeContract(contractUID);
         }
     }
 }

@@ -1,15 +1,14 @@
 package thederpgamer.contracts.gui.contract.playercontractlist;
 
-import api.common.GameClient;
 import api.common.GameCommon;
 import api.utils.gui.SimplePopup;
 import org.schema.common.util.CompareTools;
-import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.server.data.PlayerNotFountException;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
+import thederpgamer.contracts.GUIManager;
 import thederpgamer.contracts.data.contract.ClientContractData;
 import thederpgamer.contracts.data.contract.Contract;
 import thederpgamer.contracts.networking.client.ClientActionType;
@@ -21,13 +20,11 @@ import java.util.Set;
 
 public class PlayerContractsScrollableList extends ScrollableTableList<ClientContractData> implements GUIActiveInterface {
 
-    private final PlayerState player;
-    private final float width;
+    private final GUIElement window;
 
-    public PlayerContractsScrollableList(InputState state, float width, float height, GUIElement guiElement) {
-        super(state, width, height, guiElement);
-        this.width = width;
-        player = GameClient.getClientPlayerState();
+    public PlayerContractsScrollableList(InputState state, GUIMainWindow window, GUIElement content) {
+        super(state, window.getWidth(), window.getHeight(), content);
+        this.window = window;
     }
 
     @Override
@@ -112,7 +109,9 @@ public class PlayerContractsScrollableList extends ScrollableTableList<ClientCon
             public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                 if(mouseEvent.pressedLeftMouse()) {
                     getState().getController().queueUIAudio("0022_menu_ui - back");
+                    contract.setClaimed(false);
                     ClientActionType.CANCEL_CLAIM.send(contract.getUID());
+                    GUIManager.getInstance().contractsTab.flagForRefresh();
                     flagDirty();
                 }
             }
@@ -142,6 +141,7 @@ public class PlayerContractsScrollableList extends ScrollableTableList<ClientCon
                         if(contract.canComplete()) {
                             getState().getController().queueUIAudio("0022_menu_ui - enter");
                             ClientActionType.COMPLETE_CONTRACT.send(contract.getUID());
+                            GUIManager.getInstance().contractsTab.flagForRefresh();
                             flagDirty();
                         } else (new SimplePopup(getState(), "Cannot Complete Contract", "You must have the contract items in your inventory!")).activate();
                     }
@@ -199,7 +199,13 @@ public class PlayerContractsScrollableList extends ScrollableTableList<ClientCon
                 (rewardRowElement = new GUIClippedRow(getState())).attach(rewardTextElement);
 
                 PlayerContractListRow playerContractListRow = new PlayerContractListRow(getState(), contract, nameRowElement, contractTypeRowElement, contractorRowElement, rewardRowElement);
-                GUIAncor anchor = new GUIAncor(getState(), width, 28.0f);
+                GUIAncor anchor = new GUIAncor(getState(), window.getWidth() - 107.0f, 28.0f) {
+                    @Override
+                    public void draw() {
+                        setWidth(window.getWidth() - 107.0f);
+                        super.draw();
+                    }
+                };
                 anchor.attach(redrawButtonPane(contract, anchor));
                 playerContractListRow.expanded = new GUIElementList(getState());
                 playerContractListRow.expanded.add(new GUIListElement(anchor, getState()));

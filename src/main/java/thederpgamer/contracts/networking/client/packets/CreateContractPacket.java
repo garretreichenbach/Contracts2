@@ -41,6 +41,6 @@ public class CreateContractPacket extends Packet {
 
     @Override
     public void processPacketOnServer(PlayerState playerState) {
-        ServerDataManager.createContract(playerState, contract);
+        ServerDataManager.addOrUpdateContract(contract);
     }
 }

@@ -26,12 +26,12 @@ public class SendContractPacket extends Packet {
 
     public SendContractPacket() {}
 
-    public SendContractPacket(String UID, String name, int contractor, long reward, Contract.ContractType contractType) {
-        this.UID = UID;
-        this.name = name;
-        this.contractor = contractor;
-        this.reward = reward;
-        this.contractType = contractType;
+    public SendContractPacket(Contract contract) {
+        UID = contract.getUID();
+        name = contract.getName();
+        contractor = contract.getContractor().getIdFaction();
+        reward = contract.getReward();
+        contractType = contract.getContractType();
     }
 
     @Override

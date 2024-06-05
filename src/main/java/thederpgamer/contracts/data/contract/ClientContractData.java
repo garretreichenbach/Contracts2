@@ -20,7 +20,7 @@ public class ClientContractData {
     private String name;
     private int contractor;
     private long reward;
-    private Contract.ContractType contractType;
+    private int contractType;
     private long timeRemaining;
     private boolean claimed;
     private boolean canComplete;
@@ -31,7 +31,16 @@ public class ClientContractData {
         this.contractor = contractor;
         this.reward = reward;
         this.timeRemaining = timeRemaining;
-        this.contractType = contractType;
+        this.contractType = contractType.ordinal();
+    }
+
+    public ClientContractData(Contract contract) {
+        UID = contract.getUID();
+        name = contract.getName();
+        contractor = contract.getContractor().getIdFaction();
+        reward = contract.getReward();
+        timeRemaining = -1;
+        contractType = contract.getContractType().ordinal();
     }
 
     public ClientContractData(PacketReadBuffer packetReadBuffer) throws IOException {
@@ -71,7 +80,7 @@ public class ClientContractData {
     }
 
     public Contract.ContractType getContractType() {
-        return contractType;
+        return Contract.ContractType.values()[contractType];
     }
 
     public boolean canClaim() {
@@ -99,17 +108,17 @@ public class ClientContractData {
         packetWriteBuffer.writeLong(timeRemaining);
         packetWriteBuffer.writeBoolean(claimed);
         packetWriteBuffer.writeBoolean(canComplete);
-        packetWriteBuffer.writeInt(contractType.ordinal());
+        packetWriteBuffer.writeInt(contractType);
     }
 
     public void readData(PacketReadBuffer packetReadBuffer) throws IOException {
-        packetReadBuffer.readString();
-        packetReadBuffer.readString();
-        packetReadBuffer.readInt();
-        packetReadBuffer.readLong();
-        packetReadBuffer.readLong();
-        packetReadBuffer.readBoolean();
-        packetReadBuffer.readBoolean();
-        packetReadBuffer.readInt();
+        UID = packetReadBuffer.readString();
+        name = packetReadBuffer.readString();
+        contractor = packetReadBuffer.readInt();
+        reward = packetReadBuffer.readLong();
+        timeRemaining = packetReadBuffer.readLong();
+        claimed = packetReadBuffer.readBoolean();
+        canComplete = packetReadBuffer.readBoolean();
+        contractType = packetReadBuffer.readInt();
     }
 }
