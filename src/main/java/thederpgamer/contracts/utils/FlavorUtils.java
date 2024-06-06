@@ -1,10 +1,5 @@
 package thederpgamer.contracts.utils;
 
-import edu.stanford.nlp.simple.Document;
-import edu.stanford.nlp.simple.Sentence;
-
-import java.util.List;
-
 /**
  * [Description]
  *
@@ -12,6 +7,7 @@ import java.util.List;
  */
 public class FlavorUtils {
 
+	/*
 	private static String getBaseForm(String word) {
 		Document doc = new Document(word);
 		Sentence sent = doc.sentences().get(0);
@@ -19,20 +15,21 @@ public class FlavorUtils {
 		if(!lemmas.isEmpty()) return lemmas.get(0);
 		return word;
 	}
+	 */
 
 	public static String generateSpawnName(FlavorType flavorType) {
 		String adjectiveName = flavorType.adjectiveNames[(int) (Math.random() * flavorType.adjectiveNames.length)];
-		String name;
-		do name = flavorType.names[(int) (Math.random() * flavorType.names.length)];
-		while(getBaseForm(adjectiveName).equalsIgnoreCase(getBaseForm(name)));
+		String name = flavorType.names[(int) (Math.random() * flavorType.names.length)];
+//		do name = flavorType.names[(int) (Math.random() * flavorType.names.length)];
+//		while(getBaseForm(adjectiveName).equalsIgnoreCase(getBaseForm(name)));
 		return adjectiveName + " " + name;
 	}
 
 	public static String generateGroupName(FlavorType flavorType) {
 		String adjectiveName = flavorType.adjectiveNames[(int) (Math.random() * flavorType.adjectiveNames.length)];
-		String name;
-		do name = flavorType.names[(int) (Math.random() * flavorType.names.length)];
-		while(getBaseForm(adjectiveName).equalsIgnoreCase(getBaseForm(name)));
+		String name = flavorType.names[(int) (Math.random() * flavorType.names.length)];
+//		do name = flavorType.names[(int) (Math.random() * flavorType.names.length)];
+//		while(getBaseForm(adjectiveName).equalsIgnoreCase(getBaseForm(name)));
 		return "The " + adjectiveName + " " + name + "s";
 	}
 

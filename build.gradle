@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'application'
-    id 'com.github.johnrengelman.shadow' version '5.2.0'
+//    id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
 
 apply plugin: 'java'
@@ -23,7 +23,7 @@ repositories {
 dependencies {
     implementation(files(starmadeDirectory + "StarMade.jar"))
     implementation(fileTree(dir: (starmadeDirectory + "lib"), include: "*.jar"))
-    implementation 'edu.stanford.nlp:stanford-corenlp:4.5.7'
+//    implementation 'edu.stanford.nlp:stanford-corenlp:4.5.7'
 }
 
 compileJava.options.encoding = 'UTF-8'
