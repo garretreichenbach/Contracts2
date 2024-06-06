@@ -44,9 +44,7 @@ public class NewContractDialog extends PlayerInput {
 
     @Override
     public void handleMouseEvent(MouseEvent event) {
-
     }
-
 
     @Override
     public void callback(GUIElement guiElement, MouseEvent mouseEvent) {

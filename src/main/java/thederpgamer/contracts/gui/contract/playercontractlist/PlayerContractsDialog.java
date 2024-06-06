@@ -4,6 +4,7 @@ import api.common.GameClient;
 import org.schema.game.client.controller.PlayerInput;
 import org.schema.game.client.view.gui.GUIInputInterface;
 import org.schema.schine.common.language.Lng;
+import org.schema.schine.graphicsengine.core.GLFrame;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIMainWindow;
@@ -47,7 +48,7 @@ public class PlayerContractsDialog extends PlayerInput {
 	public static class PlayerContractsPanel extends GUIMainWindow implements GUIInputInterface {
 
 		public PlayerContractsPanel() {
-			super(GameClient.getClientState(), 1000, 650, "player_contracts_panel");
+			super(GameClient.getClientState(), (int) (GLFrame.getWidth() / 1.5f), (int) (GLFrame.getHeight() / 1.5f), "player_contracts_panel");
 		}
 
 

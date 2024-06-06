@@ -212,6 +212,8 @@ public class PlayerContractsScrollableList extends ScrollableTableList<Contract>
 						super.draw();
 					}
 				};
+				long timeRemaining = contract.getTimeRemaining(GameClient.getClientPlayerState().getName());
+				timeTextElement.setTextSimple(StringTools.formatRaceTime(timeRemaining));
 
 				PlayerContractListRow playerContractListRow = new PlayerContractListRow(getState(), contract, nameRowElement, contractTypeRowElement, contractorRowElement, rewardRowElement, timeTextElement);
 				GUIAncor anchor = new GUIAncor(getState(), window.getWidth() - 107.0f, 28.0f) {
