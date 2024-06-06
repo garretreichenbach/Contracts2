@@ -35,6 +35,17 @@ import java.util.Random;
  */
 public class ServerDataManager {
 
+	public static void initialize() {
+		for(Contract contract : getAllContracts()) {
+			if(contract instanceof BountyContract && ((BountyContract) contract).getTargetType() == BountyContract.BountyTargetType.NPC) {
+				for(String playerName : contract.getClaimants().keySet()) {
+					PlayerData playerData = getPlayerData(playerName);
+					if(playerData != null) NPCContractManager.addToQueue(playerData, contract);
+				}
+			}
+		}
+	}
+
 	private static File getPlayerDataFile() {
 		File folder = new File(DataUtils.getWorldDataPath());
 		if(!folder.exists()) folder.mkdirs();
@@ -227,7 +238,7 @@ public class ServerDataManager {
 	 * @param player   The player's data.
 	 */
 	public static void startContractTimer(final Contract contract, final PlayerData player) {
-		if(contract instanceof ActiveContractRunnable) NPCContractManager.addToActive(player, contract);
+		if(contract instanceof ActiveContractRunnable) NPCContractManager.addToQueue(player, contract);
 		contract.getClaimants().put(player.name, ConfigManager.getMainConfig().getLong("contract-timer-max"));
 		addOrUpdateContract(contract);
 		new StarRunnable() {
@@ -237,12 +248,13 @@ public class ServerDataManager {
 					if(contract.getClaimants().get(player.name) <= 0) {
 						try {
 							timeoutContract(contract, player);
-						} catch(PlayerNotFountException e) {
-							e.printStackTrace();
+						} catch(PlayerNotFountException exception) {
+							exception.printStackTrace();
 						}
 						cancel();
 					} else {
-						contract.getClaimants().put(player.name, contract.getClaimants().get(player.name) - 30);
+						contract.getClaimants().put(player.name, contract.getClaimants().get(player.name) - 1000);
+						addOrUpdateContract(contract);
 						ServerActionType.UPDATE_CONTRACT_TIMER.send(getPlayerState(player), contract.getUID(), contract.getClaimants().get(player.name));
 						if(contract instanceof ActiveContractRunnable && NPCContractManager.isActiveFor(player, contract)) {
 							if(!NPCContractManager.update(player, contract)) cancel();
@@ -250,7 +262,7 @@ public class ServerDataManager {
 					}
 				}
 			}
-		}.runTimer(Contracts.getInstance(), 30);
+		}.runTimer(Contracts.getInstance(), 1000);
 	}
 
 	public static PlayerState getPlayerState(PlayerData player) {

@@ -1,9 +1,12 @@
 package thederpgamer.contracts.manager;
 
 import api.common.GameCommon;
+import api.utils.StarRunnable;
 import api.utils.other.HashList;
+import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.server.data.simulation.npc.NPCFaction;
+import thederpgamer.contracts.Contracts;
 import thederpgamer.contracts.data.contract.ActiveContractRunnable;
 import thederpgamer.contracts.data.contract.BountyContract;
 import thederpgamer.contracts.data.contract.Contract;
@@ -23,6 +26,7 @@ public class NPCContractManager {
 
 	private static final HashMap<Integer, NPCFaction> npcFactions = new HashMap<>();
 	private static final HashMap<PlayerData, HashList<Contract, SegmentController>> activeContracts = new HashMap<>();
+	private static final HashList<PlayerData, Contract> spawnQueue = new HashList<>();
 
 	public static void initialize() {
 		for(String i : ConfigManager.getMainConfig().getList("npc-factions")) {
@@ -30,6 +34,34 @@ public class NPCContractManager {
 			npcFactions.put(id, (NPCFaction) GameCommon.getGameState().getFactionManager().getFaction(id));
 		}
 		//Todo: Do something with the npcFactions once StarLoader has the new events
+
+		(new StarRunnable() {
+			@Override
+			public void run() {
+				ArrayList<PlayerData> toRemove = new ArrayList<>();
+				for(PlayerData player : spawnQueue.keySet()) {
+					if(player.getPlayerState() != null){
+						List<Contract> contracts = spawnQueue.get(player);
+						for(Contract contract : contracts) {
+							if(contract instanceof BountyContract) {
+								BountyContract bountyContract = (BountyContract) contract;
+								if(bountyContract.getTargetType() == BountyContract.BountyTargetType.NPC) {
+									Vector3i sector = bountyContract.getTargetGroup().getSector();
+									if(player.getPlayerState().getCurrentSector().equals(sector)) toRemove.add(player);
+								}
+							}
+						}
+					}
+				}
+				for(PlayerData player : toRemove) {
+					ArrayList<Contract> contracts = new ArrayList<>(spawnQueue.get(player));
+					for(Contract contract : contracts) {
+						spawnQueue.get(player).remove(contract);
+						addToActive(player, contract);
+					}
+				}
+			}
+		}).runTimer(Contracts.getInstance(), 100);
 	}
 
 	public static void addToActive(PlayerData player, Contract contract) {
@@ -40,6 +72,7 @@ public class NPCContractManager {
 			if(o instanceof SegmentController) map.add(contract, (SegmentController) o);
 		}
 		activeContracts.put(player, map);
+		spawnQueue.remove(player);
 	}
 
 	public static void removeFromActive(PlayerData player, Contract contract) {
@@ -69,14 +102,7 @@ public class NPCContractManager {
 		return (ActiveContractRunnable) contract;
 	}
 
-	public static void removeActiveClaims() {
-		ArrayList<Contract> contracts = ServerDataManager.getAllContracts();
-		for(Contract contract : contracts) {
-			if(contract instanceof BountyContract && ((BountyContract) contract).getTargetType() == BountyContract.BountyTargetType.NPC) {
-				contract.getClaimants().clear();
-				ServerDataManager.addOrUpdateContract(contract);
-				//Remove claims for "active" contracts cus it would be too hard to track them across restarts
-			}
-		}
+	public static void addToQueue(PlayerData player, Contract contract) {
+		spawnQueue.add(player, contract);
 	}
 }

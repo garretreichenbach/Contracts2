@@ -47,7 +47,7 @@ public class PlayerContractsDialog extends PlayerInput {
 	public static class PlayerContractsPanel extends GUIMainWindow implements GUIInputInterface {
 
 		public PlayerContractsPanel() {
-			super(GameClient.getClientState(), 800, 650, "player_contracts_panel");
+			super(GameClient.getClientState(), 1000, 650, "player_contracts_panel");
 		}
 
 

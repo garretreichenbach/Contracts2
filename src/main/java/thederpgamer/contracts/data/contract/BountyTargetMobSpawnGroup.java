@@ -148,6 +148,6 @@ public class BountyTargetMobSpawnGroup implements JSONSerializable, NetworkSeria
 	}
 
 	public boolean isShipDead(SegmentController segmentController) {
-		return !segmentController.existsInState() || segmentController.isMarkedForPermanentDelete() || segmentController.isCoreOverheating();
+		return segmentController.existsInState() && segmentController.isCoreOverheating();
 	}
 }

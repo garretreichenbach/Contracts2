@@ -9,7 +9,6 @@ import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.Faction;
 import thederpgamer.contracts.data.JSONSerializable;
 import thederpgamer.contracts.data.NetworkSerializable;
-import thederpgamer.contracts.manager.ConfigManager;
 import thederpgamer.contracts.networking.server.ServerDataManager;
 
 import java.io.IOException;
@@ -166,10 +165,7 @@ public abstract class Contract implements JSONSerializable, NetworkSerializable 
 	}
 
 	public long getTimeRemaining(String player) {
-		if(claimants.containsKey(player)) {
-			long time = claimants.get(player);
-			return Math.min(0, (time + ConfigManager.getMainConfig().getLong("contract-timer-max")) - System.currentTimeMillis());
-		}
+		if(claimants.containsKey(player)) return claimants.get(player);
 		return 0;
 	}
 

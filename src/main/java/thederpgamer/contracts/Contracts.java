@@ -37,12 +37,8 @@ public class Contracts extends StarMod {
     }
 
     @Override
-    public void onDisable() {
-        NPCContractManager.removeActiveClaims();
-    }
-
-    @Override
     public void onServerCreated(ServerInitializeEvent event) {
+        ServerDataManager.initialize();
         if(ConfigManager.getMainConfig().getBoolean("auto-generate-contracts")) {
             NPCContractManager.initialize();
             (new StarRunnable() {

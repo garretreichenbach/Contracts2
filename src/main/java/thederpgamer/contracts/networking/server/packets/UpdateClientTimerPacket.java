@@ -20,7 +20,7 @@ public class UpdateClientTimerPacket extends Packet {
 
     public UpdateClientTimerPacket() {}
 
-    public UpdateClientTimerPacket(String contractUID, long timeRemaining) {
+    public UpdateClientTimerPacket(String contractUID, Long timeRemaining) {
         this.contractUID = contractUID;
         this.timeRemaining = timeRemaining;
     }

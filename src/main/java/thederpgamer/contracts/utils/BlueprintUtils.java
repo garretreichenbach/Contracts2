@@ -106,6 +106,7 @@ public class BlueprintUtils {
 	public static SegmentController spawnAsMob(BountyTargetMob mob, Vector3i sector, int factionId) {
 		try {
 			BlueprintEntry entry = getBlueprint(mob.getBPName());
+			if(GameServer.getServerState().getSegmentControllersByName().containsKey(mob.getSpawnName())) return null;
 			if(entry != null) {
 				Transform transform = new Transform();
 				transform.setIdentity();
@@ -136,10 +137,16 @@ public class BlueprintUtils {
 	public static Transform getRandomTransform() {
 		//Gen Random Position
 		int sectorSize = (Integer) ServerConfig.SECTOR_SIZE.getCurrentState();
-		int x = (int) (Math.random() * sectorSize);
-		int y = (int) (Math.random() * sectorSize);
-		int z = (int) (Math.random() * sectorSize);
+		int x = (int) (Math.random() * sectorSize) * 10;
+		int y = (int) (Math.random() * sectorSize) * 10;
+		int z = (int) (Math.random() * sectorSize) * 10;
 		Vector3f posInSector = new Vector3f(x, y, z);
+		int xMult = Math.random() > 0.5 ? 1 : -1;
+		int yMult = Math.random() > 0.5 ? 1 : -1;
+		int zMult = Math.random() > 0.5 ? 1 : -1;
+		posInSector.x *= xMult;
+		posInSector.y *= yMult;
+		posInSector.z *= zMult;
 
 		//Gen random rotation
 		float yaw = (float) (Math.random() * 360);
