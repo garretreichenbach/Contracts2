@@ -32,7 +32,7 @@ public class NewContractDialog extends PlayerInput {
 
     @Override
     public void onDeactivate() {
-
+        panel.cleanUp();
     }
 
     @Override
