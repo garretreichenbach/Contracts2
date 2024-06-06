@@ -56,7 +56,7 @@ public class PlayerContractsScrollableList extends ScrollableTableList<Contract>
             }
         });
 
-        addColumn("Time Remaining", 5.0F, new Comparator<Contract>() {
+        addColumn("Time Remaining", 10.0F, new Comparator<Contract>() {
             public int compare(Contract o1, Contract o2) {
                 return CompareTools.compare(o1.getTimeRemaining(GameClient.getClientPlayerState().getName()), o2.getTimeRemaining(GameClient.getClientPlayerState().getName()));
             }

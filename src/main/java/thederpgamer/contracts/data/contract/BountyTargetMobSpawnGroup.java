@@ -102,7 +102,7 @@ public class BountyTargetMobSpawnGroup implements JSONSerializable, NetworkSeria
 	public JSONObject toJSON() {
 		JSONObject json = new JSONObject();
 		json.put("name", name);
-		json.put("sector", sector.toString());
+		json.put("sector", sector.toStringPure());
 		JSONArray mobArray = new JSONArray();
 		for(BountyTargetMob mob : mobList) mobArray.put(mob.toJSON());
 		json.put("mobs", mobArray);

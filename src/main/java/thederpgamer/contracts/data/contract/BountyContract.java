@@ -57,7 +57,8 @@ public class BountyContract extends Contract implements ActiveContractRunnable {
 
     @Override
     public boolean canStartRunner(PlayerState player) {
-        return player.getCurrentSector().equals(targetGroup.getSector());
+        return true;
+//        return player.getCurrentSector().equals(targetGroup.getSector());
     }
 
     @Override

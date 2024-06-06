@@ -12,12 +12,12 @@ import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.Faction;
 import org.schema.game.common.data.player.faction.FactionManager;
 import org.schema.game.server.data.PlayerNotFountException;
-import thederpgamer.contracts.manager.ConfigManager;
 import thederpgamer.contracts.Contracts;
 import thederpgamer.contracts.data.contract.*;
+import thederpgamer.contracts.data.player.PlayerData;
+import thederpgamer.contracts.manager.ConfigManager;
 import thederpgamer.contracts.manager.NPCContractManager;
 import thederpgamer.contracts.utils.DataUtils;
-import thederpgamer.contracts.data.player.PlayerData;
 
 import java.io.File;
 import java.io.IOException;
@@ -228,11 +228,13 @@ public class ServerDataManager {
 	 */
 	public static void startContractTimer(final Contract contract, final PlayerData player) {
 		if(contract instanceof ActiveContractRunnable) NPCContractManager.addToActive(player, contract);
+		contract.getClaimants().put(player.name, ConfigManager.getMainConfig().getLong("contract-timer-max"));
+		addOrUpdateContract(contract);
 		new StarRunnable() {
 			@Override
 			public void run() {
 				if(contract.getClaimants().containsKey(player.name)) {
-					if(contract.getClaimants().get(player.name) >= ConfigManager.getMainConfig().getInt("contract-timer-max")) {
+					if(contract.getClaimants().get(player.name) <= 0) {
 						try {
 							timeoutContract(contract, player);
 						} catch(PlayerNotFountException e) {
@@ -240,7 +242,7 @@ public class ServerDataManager {
 						}
 						cancel();
 					} else {
-						contract.getClaimants().put(player.name, contract.getClaimants().get(player.name) + 30);
+						contract.getClaimants().put(player.name, contract.getClaimants().get(player.name) - 30);
 						ServerActionType.UPDATE_CONTRACT_TIMER.send(getPlayerState(player), contract.getUID(), contract.getClaimants().get(player.name));
 						if(contract instanceof ActiveContractRunnable && NPCContractManager.isActiveFor(player, contract)) {
 							if(!NPCContractManager.update(player, contract)) cancel();
@@ -267,7 +269,7 @@ public class ServerDataManager {
 		removeContract(contract);
 		contract.onCompletion(getPlayerState(playerData));
 		//Todo: Maybe some sort of custom flavor message depending on the contract type and contractor
-		playerData.sendMail(contract.getContractor().getName(), "Contract Completion", "You have completed the contract \"" + contract.getName() + "\" and have been rewarded " + contract.getReward() + " credits!");
+		playerData.sendMail(contract.getContractor().getName(), "Contract Completion", "You have completed the contract \"" + contract.getName() + "\"\nand have been rewarded " + contract.getReward() + " credits!");
 	}
 
 	/**

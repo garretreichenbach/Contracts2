@@ -58,7 +58,7 @@ public class NPCContractManager {
 	}
 
 	public static boolean isActiveFor(PlayerData player, Contract contract) {
-		return activeContracts.get(player).containsKey(contract);
+		return isAnyActive(player) && activeContracts.get(player).containsKey(contract);
 	}
 
 	public static boolean isAnyActive(PlayerData player) {

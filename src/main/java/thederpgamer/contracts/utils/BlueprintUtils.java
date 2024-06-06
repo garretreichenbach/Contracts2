@@ -116,7 +116,7 @@ public class BlueprintUtils {
 				forward.scaleAdd(1.15f, size);
 				transform.origin.set(forward);
 				try {
-					SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, mob.getSpawnName(), mob.getSpawnName(), transform, -1, factionId, sector, "Server", PlayerState.buffer, null, false, new ChildStats(false));
+					SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, mob.getBPName(), mob.getSpawnName(), transform, -1, factionId, sector, "Server", PlayerState.buffer, null, true, new ChildStats(false));
 					return outline.spawn(sector, false, new ChildStats(false), new SegmentControllerSpawnCallbackDirect(GameServer.getServerState(), sector) {
 						@Override
 						public void onNoDocker() {

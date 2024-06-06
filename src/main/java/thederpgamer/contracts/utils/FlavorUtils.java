@@ -22,7 +22,7 @@ public class FlavorUtils {
 		String name = flavorType.names[(int) (Math.random() * flavorType.names.length)];
 //		do name = flavorType.names[(int) (Math.random() * flavorType.names.length)];
 //		while(getBaseForm(adjectiveName).equalsIgnoreCase(getBaseForm(name)));
-		return adjectiveName + " " + name;
+		return flavorType.prefix + "-" + adjectiveName + " " + name;
 	}
 
 	public static String generateGroupName(FlavorType flavorType) {
@@ -47,7 +47,7 @@ public class FlavorUtils {
 		PIRATE("PRS", new String[] {
 				"Crimson", "Hardy", "Marauding", "Raiding", "Ruthless", "Savage", "Scourge", "Vicious", "Black", "Bloody", "Cutthroat", "Dread", "Fearsome", "Fierce", "Grim", "Merciless", "Red", "Savage", "Sinister", "Vile", "Wicked", "Sly"
 		}, new String[]{
-				"Pirate", "Buccaneer", "Corsair", "Freebooter", "Privateer", "Raider", "Reaver", "Reaper", "Rover", "Dog", "Swashbuckler", "Hook", "Hand", "Cannon"
+				"Pirate", "Buccaneer", "Corsair", "Freebooter", "Privateer", "Raider", "Reaver", "Reaper", "Dog", "Swashbuckler", "Hook", "Hand", "Cannon"
 		});
 
 		public final String prefix;
