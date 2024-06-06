@@ -21,7 +21,7 @@ public class ClientDataManager {
 		Contract contract = clientData.get(contractUID);
 		if(contract != null) {
 			contract.getClaimants().put(GameClient.getClientPlayerState().getName(), timeRemaining);
-			GUIManager.getInstance().contractsTab.flagForRefresh();
+			if(GUIManager.getInstance().contractsTab != null) GUIManager.getInstance().contractsTab.flagForRefresh();
 		}
 	}
 
@@ -35,7 +35,7 @@ public class ClientDataManager {
 
 	public static void updateClientData(String contractUID, Contract data) {
 		clientData.put(contractUID, data);
-		GUIManager.getInstance().contractsTab.flagForRefresh();
+		if(GUIManager.getInstance().contractsTab != null) GUIManager.getInstance().contractsTab.flagForRefresh();
 	}
 
 	public static void addContract(Contract contractData) {
@@ -45,7 +45,7 @@ public class ClientDataManager {
 
 	public static void removeClientData(String contractUID) {
 		clientData.remove(contractUID);
-		GUIManager.getInstance().contractsTab.flagForRefresh();
+		if(GUIManager.getInstance().contractsTab != null) GUIManager.getInstance().contractsTab.flagForRefresh();
 	}
 
 	public static Contract getClientData(String contractUID) {
@@ -61,7 +61,7 @@ public class ClientDataManager {
 		if(contract != null) {
 			contract.getClaimants().put(GameClient.getClientPlayerState().getName(), ConfigManager.getMainConfig().getLong("contract-timer-max"));
 			ClientActionType.CLAIM_CONTRACT.send(uid);
-			GUIManager.getInstance().contractsTab.flagForRefresh();
+			if(GUIManager.getInstance().contractsTab != null) GUIManager.getInstance().contractsTab.flagForRefresh();
 		}
 	}
 
