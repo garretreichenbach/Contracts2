@@ -20,8 +20,8 @@ public enum ClientActionType {
     CANCEL_CONTRACT(CancelContractPacket.class, String.class),
     CREATE_CONTRACT(CreateContractPacket.class, Contract.class); //Cancel a contract created by the client
 
-    private final Class<? extends Packet> packetClass;
-    private final Class<?>[] argClasses;
+    public final Class<? extends Packet> packetClass;
+    public final Class<?>[] argClasses;
 
     ClientActionType(Class<? extends Packet> packetClass, Class<?>... argClasses) {
         this.packetClass = packetClass;

@@ -31,7 +31,7 @@ public class SendContractPacket extends Packet {
 
     @Override
     public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
-        contract.writeContract(packetWriteBuffer);
+        contract.writeToBuffer(packetWriteBuffer);
     }
 
     @Override

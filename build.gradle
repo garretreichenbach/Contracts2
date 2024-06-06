@@ -1,31 +1,38 @@
 plugins {
     id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
+
+apply plugin: 'java'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
-version '2.0.2'
+version '2.0.3'
 
 def modName = 'Contracts'
 def starmadeDirectory = 'C:/Program Files (x86)/Steam/steamapps/common/StarMade/StarMade/' //Change this to your StarMade directory
+mainClassName = 'thederpgamer.contracts.Contracts'
 
 repositories {
     mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
     implementation(files(starmadeDirectory + "StarMade.jar"))
     implementation(fileTree(dir: (starmadeDirectory + "lib"), include: "*.jar"))
+    implementation 'edu.stanford.nlp:stanford-corenlp:4.5.7'
 }
 
-jar {
-    destinationDirectory.set(file(starmadeDirectory + "mods"))
-    archiveFileName = modName  + 'v' + version + '.jar'
-    manifest {
-        attributes('Main-Class': modName)
-    }
+compileJava.options.encoding = 'UTF-8'
 
+jar {
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+    destinationDirectory.set(file(starmadeDirectory + "mods"))
+    archiveFileName = modName + 'v' + getVersion() +  '.jar'
+    manifest.attributes('Main-Class': mainClassName)
     from {
         configurations.runtimeClasspath.collect {
             if(!it.getPath().contains("StarMade") && it.getName().endsWith(".jar")) it.isDirectory() ? it : zipTree(it)

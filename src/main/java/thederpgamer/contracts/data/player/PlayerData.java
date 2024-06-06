@@ -42,4 +42,8 @@ public class PlayerData implements JSONSerializable {
 	public void sendMail(String from, String title, String contents) {
 		GameCommon.getPlayerFromName(name).getClientChannel().getPlayerMessageController().serverSend(from, name, title, contents);
 	}
+
+	public PlayerState getPlayerState() {
+		return GameCommon.getPlayerFromName(name);
+	}
 }

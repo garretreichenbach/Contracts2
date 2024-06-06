@@ -4,12 +4,13 @@ import api.common.GameClient;
 import api.common.GameCommon;
 import api.utils.gui.SimplePopup;
 import org.schema.common.util.CompareTools;
+import org.schema.common.util.StringTools;
 import org.schema.game.server.data.PlayerNotFountException;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
-import thederpgamer.contracts.GUIManager;
+import thederpgamer.contracts.manager.GUIManager;
 import thederpgamer.contracts.data.contract.Contract;
 import thederpgamer.contracts.networking.client.ClientActionType;
 import thederpgamer.contracts.networking.client.ClientDataManager;
@@ -52,6 +53,12 @@ public class PlayerContractsScrollableList extends ScrollableTableList<Contract>
         addColumn("Reward", 5.0F, new Comparator<Contract>() {
             public int compare(Contract o1, Contract o2) {
                 return CompareTools.compare(o1.getReward(), o2.getReward());
+            }
+        });
+
+        addColumn("Time Remaining", 5.0F, new Comparator<Contract>() {
+            public int compare(Contract o1, Contract o2) {
+                return CompareTools.compare(o1.getTimeRemaining(GameClient.getClientPlayerState().getName()), o2.getTimeRemaining(GameClient.getClientPlayerState().getName()));
             }
         });
 
@@ -172,10 +179,10 @@ public class PlayerContractsScrollableList extends ScrollableTableList<Contract>
     }
 
     @Override
-    public void updateListEntries(GUIElementList guiElementList, Set<Contract> set) {
+    public void updateListEntries(GUIElementList guiElementList, final Set<Contract> set) {
         guiElementList.deleteObservers();
         guiElementList.addObserver(this);
-        for(Contract contract : set) {
+        for(final Contract contract : set) {
             try {
                 GUITextOverlayTable nameTextElement;
                 (nameTextElement = new GUITextOverlayTable(10, 10, getState())).setTextSimple(contract.getName());
@@ -198,7 +205,17 @@ public class PlayerContractsScrollableList extends ScrollableTableList<Contract>
                 GUIClippedRow rewardRowElement;
                 (rewardRowElement = new GUIClippedRow(getState())).attach(rewardTextElement);
 
-                PlayerContractListRow playerContractListRow = new PlayerContractListRow(getState(), contract, nameRowElement, contractTypeRowElement, contractorRowElement, rewardRowElement);
+                GUITextOverlayTable timeTextElement = new GUITextOverlayTable(10, 10, getState()) {
+                    @Override
+                    public void draw() {
+                        long timeRemaining = contract.getTimeRemaining(GameClient.getClientPlayerState().getName());
+                        setTextSimple("Time Remaining: " + StringTools.formatRaceTime(timeRemaining));
+                        super.draw();
+                    }
+                };
+                timeTextElement.setTextSimple("Time Remaining: 0s");
+
+                PlayerContractListRow playerContractListRow = new PlayerContractListRow(getState(), contract, nameRowElement, contractTypeRowElement, contractorRowElement, rewardRowElement, timeTextElement);
                 GUIAncor anchor = new GUIAncor(getState(), window.getWidth() - 107.0f, 28.0f) {
                     @Override
                     public void draw() {

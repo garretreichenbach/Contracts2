@@ -1,7 +1,8 @@
-package thederpgamer.contracts;
+package thederpgamer.contracts.utils;
 
 import api.common.GameCommon;
 import api.mod.ModSkeleton;
+import thederpgamer.contracts.Contracts;
 
 public class DataUtils {
 	private static final ModSkeleton instance = Contracts.getInstance().getSkeleton();

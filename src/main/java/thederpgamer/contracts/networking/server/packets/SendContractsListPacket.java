@@ -34,7 +34,7 @@ public class SendContractsListPacket extends Packet {
     @Override
     public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
         packetWriteBuffer.writeInt(contractDataList.size());
-        for(Contract contractData : contractDataList) contractData.writeContract(packetWriteBuffer);
+        for(Contract contractData : contractDataList) contractData.writeToBuffer(packetWriteBuffer);
     }
 
     @Override

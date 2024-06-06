@@ -1,8 +1,8 @@
 package thederpgamer.contracts.networking.client;
 
 import api.common.GameClient;
-import thederpgamer.contracts.ConfigManager;
-import thederpgamer.contracts.GUIManager;
+import thederpgamer.contracts.manager.ConfigManager;
+import thederpgamer.contracts.manager.GUIManager;
 import thederpgamer.contracts.data.contract.Contract;
 
 import java.util.ArrayList;

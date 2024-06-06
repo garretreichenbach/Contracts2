@@ -21,8 +21,8 @@ public enum ServerActionType {
     SEND_CONTRACT(SendContractPacket.class, Contract.class),
     SEND_CONTRACTS_LIST(SendContractsListPacket.class, ArrayList.class);
 
-    private final Class<? extends Packet> packetClass;
-    private final Class<?>[] argClasses;
+    public final Class<? extends Packet> packetClass;
+    public final Class<?>[] argClasses;
 
     ServerActionType(Class<? extends Packet> packetClass, Class<?>... argClasses) {
         this.packetClass = packetClass;

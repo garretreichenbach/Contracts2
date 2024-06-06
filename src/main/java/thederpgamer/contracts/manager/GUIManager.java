@@ -1,4 +1,4 @@
-package thederpgamer.contracts;
+package thederpgamer.contracts.manager;
 
 import api.listener.events.gui.MainWindowTabAddEvent;
 import org.schema.schine.common.language.Lng;

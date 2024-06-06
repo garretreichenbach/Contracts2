@@ -11,7 +11,8 @@ import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
-import thederpgamer.contracts.ConfigManager;
+import thederpgamer.contracts.data.contract.ActiveContractRunnable;
+import thederpgamer.contracts.manager.ConfigManager;
 import thederpgamer.contracts.data.contract.Contract;
 import thederpgamer.contracts.networking.client.ClientActionType;
 import thederpgamer.contracts.networking.client.ClientDataManager;
@@ -171,7 +172,9 @@ public class ContractsScrollableList extends ScrollableTableList<Contract> imple
 									(new SimplePopup(getState(), "Cannot Claim Contract", "You have too many active contracts!")).activate();
 								} else {
 									getState().getController().queueUIAudio("0022_menu_ui - enter");
-									ClientDataManager.claimContract(contract.getUID());
+									if(contract instanceof ActiveContractRunnable && !((ActiveContractRunnable) contract).canStartRunner(player)) {
+										(new SimplePopup(getState(), "Cannot Claim Contract", "You must be in the correct sector to start this contract!")).activate();
+									} else ClientDataManager.claimContract(contract.getUID());
 								}
 							} else {
 								SimplePopup popup = new SimplePopup(getState(), "Cannot Claim Contract", "You can't claim this contract!");

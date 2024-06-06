@@ -12,12 +12,11 @@ import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.Faction;
 import org.schema.game.common.data.player.faction.FactionManager;
 import org.schema.game.server.data.PlayerNotFountException;
-import thederpgamer.contracts.ConfigManager;
+import thederpgamer.contracts.manager.ConfigManager;
 import thederpgamer.contracts.Contracts;
-import thederpgamer.contracts.DataUtils;
-import thederpgamer.contracts.data.contract.BountyContract;
-import thederpgamer.contracts.data.contract.Contract;
-import thederpgamer.contracts.data.contract.ItemsContract;
+import thederpgamer.contracts.data.contract.*;
+import thederpgamer.contracts.manager.NPCContractManager;
+import thederpgamer.contracts.utils.DataUtils;
 import thederpgamer.contracts.data.player.PlayerData;
 
 import java.io.File;
@@ -228,6 +227,7 @@ public class ServerDataManager {
 	 * @param player   The player's data.
 	 */
 	public static void startContractTimer(final Contract contract, final PlayerData player) {
+		if(contract instanceof ActiveContractRunnable) NPCContractManager.addToActive(player, contract);
 		new StarRunnable() {
 			@Override
 			public void run() {
@@ -242,6 +242,9 @@ public class ServerDataManager {
 					} else {
 						contract.getClaimants().put(player.name, contract.getClaimants().get(player.name) + 30);
 						ServerActionType.UPDATE_CONTRACT_TIMER.send(getPlayerState(player), contract.getUID(), contract.getClaimants().get(player.name));
+						if(contract instanceof ActiveContractRunnable && NPCContractManager.isActiveFor(player, contract)) {
+							if(!NPCContractManager.update(player, contract)) cancel();
+						}
 					}
 				}
 			}
@@ -275,9 +278,9 @@ public class ServerDataManager {
 	 * @throws PlayerNotFountException If the PlayerData is invalid.
 	 */
 	public static void timeoutContract(Contract contract, PlayerData player) throws PlayerNotFountException {
-		contract.getClaimants().remove(player);
-		assert player != null;
+		contract.getClaimants().remove(player.name);
 		player.contracts.remove(contract.getUID());
+		if(contract instanceof ActiveContractRunnable) NPCContractManager.removeFromActive(player, contract);
 		addOrUpdateContract(contract);
 		addOrUpdatePlayerData(player);
 		player.sendMail(contract.getContractor().getName(), "Contract Cancellation", contract.getContractor().getName() + " has cancelled your contract because you took too long!");
@@ -293,7 +296,7 @@ public class ServerDataManager {
 		String contractName;
 
 		int amountInt = random.nextInt(3000 - 100) + 100;
-		int basePrice;
+		long basePrice;
 		ItemStack target;
 		Contract randomContract = null;
 
@@ -304,20 +307,17 @@ public class ServerDataManager {
 				short productionID = possibleIDs.get(productionIndex);
 				contractName = "Produce x" + amountInt + " " + ElementKeyMap.getInfo(productionID).getName();
 				target = new ItemStack(productionID, amountInt);
-				basePrice = (int) ElementKeyMap.getInfo(productionID).getPrice(true);
-				int reward = (int) ((basePrice * amountInt) * 1.3);
+				basePrice = ElementKeyMap.getInfo(productionID).getPrice(true);
+				long reward = (long) ((basePrice * amountInt) * 1.3f);
 				randomContract = new ItemsContract(FactionManager.TRAIDING_GUILD_ID, contractName, reward, target);
 				break;
-                /*
-            case BOUNTY: //Todo: Pick from a list of aggressive players rather than just random ones
-                ArrayList<PlayerState> playerStates = new ArrayList<>(GameServer.getServerState().getPlayerStatesByName().values());
-                if(playerStates.isEmpty()) return;
-                PlayerState targetPlayer = playerStates.get(random.nextInt(playerStates.size()));
-                contractName = "Kill " + targetPlayer.getName();
-                int bountyAmount = random.nextInt(10000 - 1000) + 1000;
-                randomContract = new BountyContract(FactionManager.TRAIDING_GUILD_ID, contractName, bountyAmount, targetPlayer.getName());
-                break;
-                 */
+            case BOUNTY:
+				//Todo: Add bounties on aggressive players
+	            BountyTargetMobSpawnGroup group = BountyTargetMobSpawnGroup.generateRandomSpawnGroup();
+				if(group == null) return;
+	            contractName = "Defeat the " + group.getName() + " in sector " + group.getSector();
+				randomContract = new BountyContract(FactionManager.TRAIDING_GUILD_ID, contractName, (long) (group.calculateReward() * 1.3f), group);
+	            break;
 		}
 		if(randomContract != null) addOrUpdateContract(randomContract);
 	}

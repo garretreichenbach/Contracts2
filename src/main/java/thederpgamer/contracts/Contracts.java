@@ -9,12 +9,13 @@ import thederpgamer.contracts.data.commands.CompleteContractsCommand;
 import thederpgamer.contracts.data.commands.ListContractsCommand;
 import thederpgamer.contracts.data.commands.PurgeContractsCommand;
 import thederpgamer.contracts.data.commands.RandomContractsCommand;
-import thederpgamer.contracts.networking.client.packets.*;
+import thederpgamer.contracts.manager.ConfigManager;
+import thederpgamer.contracts.manager.EventManager;
+import thederpgamer.contracts.manager.GUIManager;
+import thederpgamer.contracts.manager.NPCContractManager;
+import thederpgamer.contracts.networking.client.ClientActionType;
+import thederpgamer.contracts.networking.server.ServerActionType;
 import thederpgamer.contracts.networking.server.ServerDataManager;
-import thederpgamer.contracts.networking.server.packets.RemoveContractPacket;
-import thederpgamer.contracts.networking.server.packets.SendContractPacket;
-import thederpgamer.contracts.networking.server.packets.SendContractsListPacket;
-import thederpgamer.contracts.networking.server.packets.UpdateClientTimerPacket;
 
 public class Contracts extends StarMod {
 
@@ -33,6 +34,11 @@ public class Contracts extends StarMod {
         GUIManager.initialize();
         registerCommands();
         registerPackets();
+    }
+
+    @Override
+    public void onDisable() {
+        NPCContractManager.removeActiveClaims();
     }
 
     @Override
@@ -58,14 +64,7 @@ public class Contracts extends StarMod {
     }
 
     private void registerPackets() {
-        PacketUtil.registerPacket(RemoveContractPacket.class);
-        PacketUtil.registerPacket(SendContractPacket.class);
-        PacketUtil.registerPacket(SendContractsListPacket.class);
-        PacketUtil.registerPacket(UpdateClientTimerPacket.class);
-        PacketUtil.registerPacket(CancelContractClaimPacket.class);
-        PacketUtil.registerPacket(CancelContractPacket.class);
-        PacketUtil.registerPacket(CompleteContractPacket.class);
-        PacketUtil.registerPacket(GetContractPacket.class);
-        PacketUtil.registerPacket(GetContractsListPacket.class);
+        for(ServerActionType type : ServerActionType.values()) PacketUtil.registerPacket(type.packetClass);
+        for(ClientActionType type : ClientActionType.values()) PacketUtil.registerPacket(type.packetClass);
     }
 }

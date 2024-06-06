@@ -23,7 +23,7 @@ public class ItemsContract extends Contract {
         super(packetReadBuffer);
     }
 
-    public ItemsContract(int contractorID, String name, int reward, ItemStack target) {
+    public ItemsContract(int contractorID, String name, long reward, ItemStack target) {
         super(contractorID, name, reward);
         this.target = target;
     }
@@ -74,11 +74,13 @@ public class ItemsContract extends Contract {
 
     @Override
     public void readFromBuffer(PacketReadBuffer readBuffer) throws IOException {
+        super.readFromBuffer(readBuffer);
         target = new ItemStack(readBuffer.readShort(), readBuffer.readInt());
     }
 
     @Override
     public void writeToBuffer(PacketWriteBuffer writeBuffer) throws IOException {
+        super.writeToBuffer(writeBuffer);
         writeBuffer.writeShort(target.getId());
         writeBuffer.writeInt(target.getAmount());
     }

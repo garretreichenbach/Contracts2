@@ -8,21 +8,23 @@ import org.json.JSONObject;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.Faction;
 import thederpgamer.contracts.data.JSONSerializable;
+import thederpgamer.contracts.data.NetworkSerializable;
+import thederpgamer.contracts.manager.ConfigManager;
 import thederpgamer.contracts.networking.server.ServerDataManager;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.UUID;
 
-public abstract class Contract implements JSONSerializable {
+public abstract class Contract implements JSONSerializable, NetworkSerializable {
 
 	protected String name;
 	protected int contractorID;
-	protected int reward;
+	protected long reward;
 	protected HashMap<String, Long> claimants = new HashMap<>();
 	protected String uid;
 
-	protected Contract(int contractorID, String name, int reward) {
+	protected Contract(int contractorID, String name, long reward) {
 		this.name = name;
 		this.contractorID = contractorID;
 		this.reward = reward;
@@ -32,16 +34,6 @@ public abstract class Contract implements JSONSerializable {
 	}
 
 	protected Contract(PacketReadBuffer readBuffer) throws IOException {
-		name = readBuffer.readString();
-		contractorID = readBuffer.readInt();
-		reward = readBuffer.readInt();
-		uid = readBuffer.readString();
-		int claimantsSize = readBuffer.readInt();
-		for(int i = 0; i < claimantsSize; i++) {
-			String playerName = readBuffer.readString();
-			long time = readBuffer.readLong();
-			claimants.put(playerName, time);
-		}
 		readFromBuffer(readBuffer);
 	}
 
@@ -53,7 +45,7 @@ public abstract class Contract implements JSONSerializable {
 	public void fromJSON(JSONObject json) {
 		name = json.getString("name");
 		contractorID = json.getInt("contractorID");
-		reward = json.getInt("reward");
+		reward = json.getLong("reward");
 		uid = json.getString("uid");
 		claimants = new HashMap<>();
 		JSONArray claimantsArray = json.getJSONArray("claimants");
@@ -127,7 +119,7 @@ public abstract class Contract implements JSONSerializable {
 		return (contractorID != 0) ? getContractor().getName() : "Non-Aligned";
 	}
 
-	public int getReward() {
+	public long getReward() {
 		return reward;
 	}
 
@@ -141,26 +133,45 @@ public abstract class Contract implements JSONSerializable {
 
 	public abstract void onCompletion(PlayerState player);
 
-	public abstract void readFromBuffer(PacketReadBuffer readBuffer) throws IOException;
-
-	public abstract void writeToBuffer(PacketWriteBuffer writeBuffer) throws IOException;
-
-	public void writeContract(PacketWriteBuffer packetWriteBuffer) throws IOException {
-		packetWriteBuffer.writeString(getContractType().displayName);
-		packetWriteBuffer.writeString(name);
-		packetWriteBuffer.writeInt(contractorID);
-		packetWriteBuffer.writeInt(reward);
-		packetWriteBuffer.writeString(uid);
-		packetWriteBuffer.writeInt(claimants.size());
-		for(String playerData : claimants.keySet()) {
-			packetWriteBuffer.writeString(playerData);
-			packetWriteBuffer.writeLong(claimants.get(playerData));
+	@Override
+	public void readFromBuffer(PacketReadBuffer readBuffer) throws IOException {
+		name = readBuffer.readString();
+		contractorID = readBuffer.readInt();
+		reward = readBuffer.readLong();
+		uid = readBuffer.readString();
+		int claimantsSize = readBuffer.readInt();
+		for(int i = 0; i < claimantsSize; i++) {
+			String playerName = readBuffer.readString();
+			long time = readBuffer.readLong();
+			claimants.put(playerName, time);
 		}
-		writeToBuffer(packetWriteBuffer);
+	}
+
+	@Override
+	public void writeToBuffer(PacketWriteBuffer writeBuffer) throws IOException {
+		writeBuffer.writeString(getContractType().displayName);
+		writeBuffer.writeString(name);
+		writeBuffer.writeInt(contractorID);
+		writeBuffer.writeLong(reward);
+		writeBuffer.writeString(uid);
+		writeBuffer.writeInt(claimants.size());
+		for(String playerData : claimants.keySet()) {
+			writeBuffer.writeString(playerData);
+			writeBuffer.writeLong(claimants.get(playerData));
+		}
+		writeToBuffer(writeBuffer);
 	}
 
 	public boolean canClaim(PlayerState playerState) {
 		return !claimants.containsKey(playerState.getName()) && playerState.getFactionId() != contractorID && !GameCommon.getGameState().getFactionManager().isEnemy(contractorID, playerState.getFactionId());
+	}
+
+	public long getTimeRemaining(String player) {
+		if(claimants.containsKey(player)) {
+			long time = claimants.get(player);
+			return Math.min(0, (time + ConfigManager.getMainConfig().getLong("contract-timer-max")) - System.currentTimeMillis());
+		}
+		return 0;
 	}
 
 	public enum ContractType {
