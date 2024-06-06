@@ -26,7 +26,6 @@ public enum ClientActionType {
     ClientActionType(Class<? extends Packet> packetClass, Class<?>... argClasses) {
         this.packetClass = packetClass;
         this.argClasses = argClasses;
-        PacketUtil.registerPacket(packetClass);
     }
 
     public void send(Object... args) {

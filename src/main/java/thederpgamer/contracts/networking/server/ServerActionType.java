@@ -27,7 +27,6 @@ public enum ServerActionType {
     ServerActionType(Class<? extends Packet> packetClass, Class<?>... argClasses) {
         this.packetClass = packetClass;
         this.argClasses = argClasses;
-        PacketUtil.registerPacket(packetClass);
     }
 
     public void send(PlayerState target, Object... args) {
