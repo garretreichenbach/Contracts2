@@ -159,7 +159,6 @@ public abstract class Contract implements JSONSerializable, NetworkSerializable 
 			writeBuffer.writeString(playerData);
 			writeBuffer.writeLong(claimants.get(playerData));
 		}
-		writeToBuffer(writeBuffer);
 	}
 
 	public boolean canClaim(PlayerState playerState) {

@@ -28,7 +28,7 @@ public class SectorUtils {
 			int zMultiplier = Universe.getRandom().nextInt(2) == 0 ? 1 : -1;
 			int z = Universe.getRandom().nextInt(range) - (range / 2) * zMultiplier;
 			Vector3i temp = new Vector3i(x, y, z);
-			if(!containsStations(temp) && !tooCloseToStar(temp)) {
+			if(/*!containsStations(temp) && */!tooCloseToStar(temp)) {
 				sector.set(temp);
 				break;
 			}

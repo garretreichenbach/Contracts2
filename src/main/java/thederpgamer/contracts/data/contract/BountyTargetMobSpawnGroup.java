@@ -120,7 +120,7 @@ public class BountyTargetMobSpawnGroup implements JSONSerializable, NetworkSeria
 	@Override
 	public void writeToBuffer(PacketWriteBuffer writeBuffer) throws IOException {
 		writeBuffer.writeString(name);
-		writeBuffer.writeString(sector.toString());
+		writeBuffer.writeString(sector.toStringPure());
 		writeBuffer.writeInt(mobList.size());
 		for(BountyTargetMob mob : mobList) mob.writeToBuffer(writeBuffer);
 	}
