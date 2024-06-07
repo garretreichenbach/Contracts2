@@ -21,7 +21,7 @@ import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import org.schema.schine.input.InputState;
 import org.schema.schine.network.server.ServerMessage;
 import thederpgamer.contracts.Contracts;
-import thederpgamer.contracts.data.contract.BountyContract;
+import thederpgamer.contracts.data.contract.bounty.BountyContract;
 import thederpgamer.contracts.data.contract.Contract;
 import thederpgamer.contracts.gui.contract.playercontractlist.PlayerContractsDialog;
 import thederpgamer.contracts.networking.client.ClientDataManager;

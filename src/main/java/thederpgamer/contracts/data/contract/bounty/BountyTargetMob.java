@@ -1,4 +1,4 @@
-package thederpgamer.contracts.data.contract;
+package thederpgamer.contracts.data.contract.bounty;
 
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;

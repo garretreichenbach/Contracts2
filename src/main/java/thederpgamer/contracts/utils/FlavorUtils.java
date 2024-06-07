@@ -7,29 +7,15 @@ package thederpgamer.contracts.utils;
  */
 public class FlavorUtils {
 
-	/*
-	private static String getBaseForm(String word) {
-		Document doc = new Document(word);
-		Sentence sent = doc.sentences().get(0);
-		List<String> lemmas = sent.lemmas();
-		if(!lemmas.isEmpty()) return lemmas.get(0);
-		return word;
-	}
-	 */
-
 	public static String generateSpawnName(FlavorType flavorType) {
 		String adjectiveName = flavorType.adjectiveNames[(int) (Math.random() * flavorType.adjectiveNames.length)];
 		String name = flavorType.names[(int) (Math.random() * flavorType.names.length)];
-//		do name = flavorType.names[(int) (Math.random() * flavorType.names.length)];
-//		while(getBaseForm(adjectiveName).equalsIgnoreCase(getBaseForm(name)));
 		return flavorType.prefix + "-" + adjectiveName + " " + name;
 	}
 
 	public static String generateGroupName(FlavorType flavorType) {
 		String adjectiveName = flavorType.adjectiveNames[(int) (Math.random() * flavorType.adjectiveNames.length)];
 		String name = flavorType.names[(int) (Math.random() * flavorType.names.length)];
-//		do name = flavorType.names[(int) (Math.random() * flavorType.names.length)];
-//		while(getBaseForm(adjectiveName).equalsIgnoreCase(getBaseForm(name)));
 		return "The " + adjectiveName + " " + name + "s";
 	}
 

@@ -1,4 +1,4 @@
-package thederpgamer.contracts.data.contract;
+package thederpgamer.contracts.data.contract.bounty;
 
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
@@ -68,7 +68,7 @@ public class BountyTargetMobSpawnGroup implements JSONSerializable, NetworkSeria
 				}
 				if(!mobList.isEmpty()) {
 					String name = FlavorUtils.generateGroupName(FlavorUtils.FlavorType.PIRATE);
-					Vector3i sector = SectorUtils.getRandomSector(10);
+					Vector3i sector = SectorUtils.getRandomSector(30);
 					return new BountyTargetMobSpawnGroup(name, sector, mobList.toArray(new BountyTargetMob[0]));
 				}
 			}
@@ -134,7 +134,7 @@ public class BountyTargetMobSpawnGroup implements JSONSerializable, NetworkSeria
 	public List<SegmentController> spawnGroup() {
 		List<SegmentController> spawnedMobs = new ArrayList<>();
 		for(BountyTargetMob mob : mobList) {
-			SegmentController spawnedMob = BlueprintUtils.spawnAsMob(mob, sector, FactionManager.PIRATES_ID);
+			SegmentController spawnedMob = BlueprintUtils.spawnAsMob(mob.getBPName(), mob.getSpawnName(), sector, FactionManager.PIRATES_ID);
 			if(spawnedMob != null) spawnedMobs.add(spawnedMob);
 		}
 		return spawnedMobs;

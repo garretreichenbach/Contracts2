@@ -9,10 +9,7 @@ import thederpgamer.contracts.data.commands.CompleteContractsCommand;
 import thederpgamer.contracts.data.commands.ListContractsCommand;
 import thederpgamer.contracts.data.commands.PurgeContractsCommand;
 import thederpgamer.contracts.data.commands.RandomContractsCommand;
-import thederpgamer.contracts.manager.ConfigManager;
-import thederpgamer.contracts.manager.EventManager;
-import thederpgamer.contracts.manager.GUIManager;
-import thederpgamer.contracts.manager.NPCContractManager;
+import thederpgamer.contracts.manager.*;
 import thederpgamer.contracts.networking.client.ClientActionType;
 import thederpgamer.contracts.networking.server.ServerActionType;
 import thederpgamer.contracts.networking.server.ServerDataManager;
@@ -40,7 +37,8 @@ public class Contracts extends StarMod {
     public void onServerCreated(ServerInitializeEvent event) {
         ServerDataManager.initialize();
         if(ConfigManager.getMainConfig().getBoolean("auto-generate-contracts")) {
-            NPCContractManager.initialize();
+            NPCBountyContractManager.initialize();
+            EscortContractManager.initialize();
             (new StarRunnable() {
                 @Override
                 public void run() {

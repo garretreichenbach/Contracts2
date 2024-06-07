@@ -7,9 +7,7 @@ import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.catalog.CatalogManager;
 import org.schema.game.common.data.player.catalog.CatalogPermission;
-import org.schema.game.server.controller.BluePrintController;
-import org.schema.game.server.controller.EntityAlreadyExistsException;
-import org.schema.game.server.controller.EntityNotFountException;
+import org.schema.game.server.controller.*;
 import org.schema.game.server.data.GameServerState;
 import org.schema.game.server.data.ServerConfig;
 import org.schema.game.server.data.blueprint.ChildStats;
@@ -19,11 +17,11 @@ import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import org.schema.game.server.data.blueprintnw.BlueprintType;
 import org.schema.schine.graphicsengine.core.GlUtil;
 import org.schema.schine.graphicsengine.core.settings.StateParameterNotFoundException;
-import thederpgamer.contracts.manager.ConfigManager;
 import thederpgamer.contracts.Contracts;
-import thederpgamer.contracts.data.contract.BountyTargetMob;
+import thederpgamer.contracts.manager.ConfigManager;
 
 import javax.vecmath.Vector3f;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,6 +59,18 @@ public class BlueprintUtils {
 		}
 	}
 
+	public static CatalogPermission getCatalogPermission(BlueprintEntry blueprint) {
+		try {
+			readBPs();
+			for(BlueprintEntry entry : blueprintMap.keySet()) {
+				if(Objects.equals(entry.getName(), blueprint.getName())) return blueprintMap.get(entry);
+			}
+		} catch(Exception exception) {
+			Contracts.getInstance().logException("An error occurred while getting catalog permission", exception);
+		}
+		return null;
+	}
+
 	public static ArrayList<BlueprintEntry> getPirateBPs() {
 		ArrayList<BlueprintEntry> pirateBPs = new ArrayList<>();
 		try {
@@ -87,7 +97,6 @@ public class BlueprintUtils {
 			Contracts.getInstance().logException("An error occurred while getting pirate spawn weights", exception);
 		}
 		return pirateSpawnWeights;
-
 	}
 
 	public static ArrayList<CatalogPermission> getAllCatalogPermissions() {
@@ -104,10 +113,10 @@ public class BlueprintUtils {
 		return GameServer.getServerState().getCatalogManager();
 	}
 
-	public static SegmentController spawnAsMob(BountyTargetMob mob, Vector3i sector, int factionId) {
+	public static SegmentController spawnAsMob(String bpName, String spawnName, Vector3i sector, int factionId) {
 		try {
-			BlueprintEntry entry = getBlueprint(mob.getBPName());
-			if(GameServer.getServerState().getSegmentControllersByName().containsKey(mob.getSpawnName())) return null;
+			BlueprintEntry entry = getBlueprint(bpName);
+			if(GameServer.getServerState().getSegmentControllersByName().containsKey(spawnName)) return null;
 			if(entry != null) {
 				Transform transform = new Transform();
 				transform.setIdentity();
@@ -118,14 +127,13 @@ public class BlueprintUtils {
 				forward.scaleAdd(1.15f, size);
 				transform.origin.set(forward);
 				try {
-					SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, mob.getBPName(), mob.getSpawnName(), transform, -1, factionId, sector, "Server", PlayerState.buffer, null, true, new ChildStats(false));
+					SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, bpName, spawnName, transform, -1, factionId, sector, "Server", PlayerState.buffer, null, true, new ChildStats(false));
 					return outline.spawn(sector, false, new ChildStats(false), new SegmentControllerSpawnCallbackDirect(GameServer.getServerState(), sector) {
 						@Override
 						public void onNoDocker() {
 						}
 					});
-				} catch(EntityNotFountException | IOException | EntityAlreadyExistsException |
-				        StateParameterNotFoundException exception) {
+				} catch(EntityNotFountException | IOException | EntityAlreadyExistsException | StateParameterNotFoundException exception) {
 					Contracts.getInstance().logException("An error occurred while spawning mob", exception);
 				}
 			}
@@ -138,9 +146,9 @@ public class BlueprintUtils {
 	public static Transform getRandomTransform() {
 		//Gen Random Position
 		int sectorSize = (Integer) ServerConfig.SECTOR_SIZE.getCurrentState();
-		int x = (int) (Math.random() * sectorSize) * 10;
-		int y = (int) (Math.random() * sectorSize) * 10;
-		int z = (int) (Math.random() * sectorSize) * 10;
+		int x = (int) (Math.random() * sectorSize) * 30;
+		int y = (int) (Math.random() * sectorSize) * 30;
+		int z = (int) (Math.random() * sectorSize) * 30;
 		Vector3f posInSector = new Vector3f(x, y, z);
 		int xMult = Math.random() > 0.5 ? 1 : -1;
 		int yMult = Math.random() > 0.5 ? 1 : -1;
@@ -165,7 +173,7 @@ public class BlueprintUtils {
 		return transform; //Hope and pray it doesn't collide with anything
 	}
 
-	private static BlueprintEntry getBlueprint(String bpName) {
+	public static BlueprintEntry getBlueprint(String bpName) {
 		try {
 			readBPs();
 			for(BlueprintEntry blueprint : blueprintMap.keySet()) {
@@ -173,6 +181,96 @@ public class BlueprintUtils {
 			}
 		} catch(Exception exception) {
 			Contracts.getInstance().logException("An error occurred while getting blueprint", exception);
+		}
+		return null;
+	}
+
+	public static ArrayList<BlueprintEntry> getEscortShips() {
+		final ArrayList<BlueprintEntry> escortShips = new ArrayList<>();
+		try {
+			File tradingGuildBpZip = new File("./data/npcFactions/Trading Guild/blueprints.zip");
+			if(!tradingGuildBpZip.exists()) return null;
+			File unzipTempFolder = new File("./data/npcFactions/Trading Guild/temp");
+			if(unzipTempFolder.exists()) unzipTempFolder.delete();
+			unzipTempFolder.mkdirs();
+			//Unzip the blueprints
+			FileUtils.unzip(tradingGuildBpZip, unzipTempFolder);
+			//Get all the blueprints
+			for(File file : Objects.requireNonNull(unzipTempFolder.listFiles())) {
+				BluePrintController.active.importFile(file, new MayImportCallback() {
+					@Override
+					public void callbackOnImportDenied(BlueprintEntry blueprintEntry) {
+
+					}
+
+					@Override
+					public boolean mayImport(BlueprintEntry blueprintEntry) {
+						return true;
+					}
+
+					@Override
+					public void onImport(BlueprintEntry blueprintEntry) {
+						if(blueprintEntry.getType() == BlueprintType.SHIP && blueprintEntry.getTotalCapacity() <= 0) escortShips.add(blueprintEntry);
+					}
+				});
+			}
+			unzipTempFolder.deleteOnExit();
+		} catch(ImportFailedException | IOException exception) {
+			Contracts.getInstance().logException("An error occurred while getting random cargo ship", exception);
+		}
+		return escortShips;
+	}
+
+	public static ArrayList<BlueprintEntry> getCargoShips() {
+		final ArrayList<BlueprintEntry> cargoShips = new ArrayList<>();
+		try {
+			File tradingGuildBpZip = new File("./data/npcFactions/Trading Guild/blueprints.zip");
+			if(!tradingGuildBpZip.exists()) return null;
+			File unzipTempFolder = new File("./data/npcFactions/Trading Guild/temp");
+			if(unzipTempFolder.exists()) unzipTempFolder.delete();
+			unzipTempFolder.mkdirs();
+			//Unzip the blueprints
+			FileUtils.unzip(tradingGuildBpZip, unzipTempFolder);
+			//Get all the blueprints
+			for(File file : Objects.requireNonNull(unzipTempFolder.listFiles())) {
+				BluePrintController.active.importFile(file, new MayImportCallback() {
+					@Override
+					public void callbackOnImportDenied(BlueprintEntry blueprintEntry) {
+
+					}
+
+					@Override
+					public boolean mayImport(BlueprintEntry blueprintEntry) {
+						return true;
+					}
+
+					@Override
+					public void onImport(BlueprintEntry blueprintEntry) {
+						if(blueprintEntry.getType() == BlueprintType.SHIP && blueprintEntry.getTotalCapacity() > 0) cargoShips.add(blueprintEntry);
+					}
+				});
+			}
+			unzipTempFolder.deleteOnExit();
+		} catch(ImportFailedException | IOException exception) {
+			Contracts.getInstance().logException("An error occurred while getting random cargo ship", exception);
+		}
+		return cargoShips;
+	}
+
+	public static BlueprintEntry getRandomCargoShip() {
+		ArrayList<BlueprintEntry> cargoShips = getCargoShips();
+		if(cargoShips != null && !cargoShips.isEmpty()) {
+			int index = (int) (Math.random() * cargoShips.size());
+			return cargoShips.get(index);
+		}
+		return null;
+	}
+
+	public static BlueprintEntry getRandomEscortShip() {
+		ArrayList<BlueprintEntry> escortShips = getEscortShips();
+		if(escortShips != null && !escortShips.isEmpty()) {
+			int index = (int) (Math.random() * escortShips.size());
+			return escortShips.get(index);
 		}
 		return null;
 	}

@@ -3,8 +3,8 @@ package thederpgamer.contracts.utils;
 import api.common.GameCommon;
 import api.common.GameServer;
 import org.schema.common.util.linAlg.Vector3i;
-import org.schema.game.common.controller.SpaceStation;
 import org.schema.game.common.data.world.Sector;
+import org.schema.game.common.data.world.SectorInformation;
 import org.schema.game.common.data.world.StellarSystem;
 import org.schema.game.common.data.world.Universe;
 import thederpgamer.contracts.Contracts;
@@ -19,6 +19,10 @@ import java.io.IOException;
 public class SectorUtils {
 
 	public static Vector3i getRandomSector(int range) {
+		return getRandomSector(new Vector3i(2, 2, 2), range);
+	}
+
+	public static Vector3i getRandomSector(Vector3i start, int range) {
 		Vector3i sector = new Vector3i();
 		while(true) {
 			int xMultiplier = Universe.getRandom().nextInt(2) == 0 ? 1 : -1;
@@ -27,8 +31,8 @@ public class SectorUtils {
 			int y = Universe.getRandom().nextInt(range) - (range / 2) * yMultiplier;
 			int zMultiplier = Universe.getRandom().nextInt(2) == 0 ? 1 : -1;
 			int z = Universe.getRandom().nextInt(range) - (range / 2) * zMultiplier;
-			Vector3i temp = new Vector3i(x, y, z);
-			if(/*!containsStations(temp) && */!tooCloseToStar(temp)) {
+			Vector3i temp = new Vector3i(start.x + x, start.y + y, start.z + z);
+			if(!containsStations(temp) && !tooCloseToStar(temp)) {
 				sector.set(temp);
 				break;
 			}
@@ -39,7 +43,7 @@ public class SectorUtils {
 	public static boolean containsStations(Vector3i sector) {
 		try {
 			Sector s = GameServer.getUniverse().getSector(sector);
-			return s.getStationType() != SpaceStation.SpaceStationType.EMPTY;
+			return s.getSectorType() == SectorInformation.SectorType.VOID || s.getSectorType() == SectorInformation.SectorType.VOID || s.getSectorType() == SectorInformation.SectorType.LOW_ASTEROID;
 		} catch(IOException exception) {
 			Contracts.getInstance().logException("An error occurred while checking if sector contains stations", exception);
 		}

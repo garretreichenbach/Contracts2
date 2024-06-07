@@ -1,7 +1,6 @@
 plugins {
     id 'java'
     id 'application'
-//    id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
 
 apply plugin: 'java'
@@ -9,21 +8,19 @@ apply plugin: 'java'
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
-version '2.0.4'
+version '2.0.5'
 
 def modName = 'Contracts'
-def starmadeDirectory = 'G:/SteamLibrary/steamapps/common/StarMade/StarMade/' //Change this to your StarMade directory
+def starmadeDirectory = 'C:/Program Files (x86)/Steam/steamapps/common/StarMade/StarMade/' //Change this to your StarMade directory
 mainClassName = 'thederpgamer.contracts.Contracts'
 
 repositories {
     mavenCentral()
-    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
     implementation(files(starmadeDirectory + "StarMade.jar"))
     implementation(fileTree(dir: (starmadeDirectory + "lib"), include: "*.jar"))
-//    implementation 'edu.stanford.nlp:stanford-corenlp:4.5.7'
 }
 
 compileJava.options.encoding = 'UTF-8'

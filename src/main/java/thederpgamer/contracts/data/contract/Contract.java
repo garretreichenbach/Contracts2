@@ -9,6 +9,9 @@ import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.Faction;
 import thederpgamer.contracts.data.JSONSerializable;
 import thederpgamer.contracts.data.NetworkSerializable;
+import thederpgamer.contracts.data.contract.bounty.BountyContract;
+import thederpgamer.contracts.data.contract.escort.EscortContract;
+import thederpgamer.contracts.data.contract.items.ItemsContract;
 import thederpgamer.contracts.networking.server.ServerDataManager;
 
 import java.io.IOException;
@@ -33,11 +36,11 @@ public abstract class Contract implements JSONSerializable, NetworkSerializable 
 	}
 
 	protected Contract(PacketReadBuffer readBuffer) throws IOException {
-		readFromBuffer(readBuffer);
+
 	}
 
 	protected Contract(JSONObject jsonObject) {
-		fromJSON(jsonObject);
+
 	}
 
 	@Override
@@ -80,6 +83,8 @@ public abstract class Contract implements JSONSerializable, NetworkSerializable 
 				return new BountyContract(json);
 			case ITEMS:
 				return new ItemsContract(json);
+			case ESCORT:
+				return new EscortContract(json);
 			default:
 				return null;
 		}
@@ -92,6 +97,8 @@ public abstract class Contract implements JSONSerializable, NetworkSerializable 
 				return new BountyContract(packetReadBuffer);
 			case ITEMS:
 				return new ItemsContract(packetReadBuffer);
+			case ESCORT:
+				return new EscortContract(packetReadBuffer);
 			default:
 				return null;
 		}
@@ -169,11 +176,15 @@ public abstract class Contract implements JSONSerializable, NetworkSerializable 
 		return 0;
 	}
 
+	public void setReward(long reward) {
+		this.reward = reward;
+	}
+
 	public enum ContractType {
 		ALL("All"),
 		BOUNTY("Bounty"),
-		ITEMS("Items");
-		//ESCORT("Escort");
+		ITEMS("Items"),
+		ESCORT("Escort");
 
 		public final String displayName;
 

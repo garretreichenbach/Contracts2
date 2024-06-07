@@ -13,10 +13,16 @@ import org.schema.game.common.data.player.faction.Faction;
 import org.schema.game.common.data.player.faction.FactionManager;
 import org.schema.game.server.data.PlayerNotFountException;
 import thederpgamer.contracts.Contracts;
-import thederpgamer.contracts.data.contract.*;
+import thederpgamer.contracts.data.contract.ActiveContractRunnable;
+import thederpgamer.contracts.data.contract.Contract;
+import thederpgamer.contracts.data.contract.bounty.BountyContract;
+import thederpgamer.contracts.data.contract.bounty.BountyTargetMobSpawnGroup;
+import thederpgamer.contracts.data.contract.escort.EscortContract;
+import thederpgamer.contracts.data.contract.items.ItemsContract;
 import thederpgamer.contracts.data.player.PlayerData;
 import thederpgamer.contracts.manager.ConfigManager;
-import thederpgamer.contracts.manager.NPCContractManager;
+import thederpgamer.contracts.manager.EscortContractManager;
+import thederpgamer.contracts.manager.NPCBountyContractManager;
 import thederpgamer.contracts.utils.DataUtils;
 
 import java.io.File;
@@ -40,7 +46,7 @@ public class ServerDataManager {
 			if(contract instanceof BountyContract && ((BountyContract) contract).getTargetType() == BountyContract.BountyTargetType.NPC) {
 				for(String playerName : contract.getClaimants().keySet()) {
 					PlayerData playerData = getPlayerData(playerName);
-					if(playerData != null) NPCContractManager.addToQueue(playerData, contract);
+					if(playerData != null) NPCBountyContractManager.addToQueue(playerData, contract);
 				}
 			}
 		}
@@ -238,7 +244,8 @@ public class ServerDataManager {
 	 * @param player   The player's data.
 	 */
 	public static void startContractTimer(final Contract contract, final PlayerData player) {
-		if(contract instanceof ActiveContractRunnable) NPCContractManager.addToQueue(player, contract);
+		if(contract instanceof BountyContract) NPCBountyContractManager.addToQueue(player, contract);
+		else if(contract instanceof EscortContract) EscortContractManager.addToQueue(player, (EscortContract) contract);
 		contract.getClaimants().put(player.name, ConfigManager.getMainConfig().getLong("contract-timer-max"));
 		addOrUpdateContract(contract);
 		new StarRunnable() {
@@ -256,8 +263,8 @@ public class ServerDataManager {
 						contract.getClaimants().put(player.name, contract.getClaimants().get(player.name) - 1000);
 						addOrUpdateContract(contract);
 						ServerActionType.UPDATE_CONTRACT_TIMER.send(getPlayerState(player), contract.getUID(), contract.getClaimants().get(player.name));
-						if(contract instanceof ActiveContractRunnable && NPCContractManager.isActiveFor(player, contract)) {
-							if(!NPCContractManager.update(player, contract)) cancel();
+						if(contract instanceof ActiveContractRunnable && NPCBountyContractManager.isActiveFor(player, contract)) {
+							if(!NPCBountyContractManager.update(player, contract)) cancel();
 						}
 					}
 				}
@@ -294,7 +301,7 @@ public class ServerDataManager {
 	public static void timeoutContract(Contract contract, PlayerData player) throws PlayerNotFountException {
 		contract.getClaimants().remove(player.name);
 		player.contracts.remove(contract.getUID());
-		if(contract instanceof ActiveContractRunnable) NPCContractManager.removeFromActive(player, contract);
+		if(contract instanceof ActiveContractRunnable) NPCBountyContractManager.removeFromActive(player, contract);
 		addOrUpdateContract(contract);
 		addOrUpdatePlayerData(player);
 		player.sendMail(contract.getContractor().getName(), "Contract Cancellation", contract.getContractor().getName() + " has cancelled your contract because you took too long!");
@@ -408,5 +415,10 @@ public class ServerDataManager {
 			if(contract instanceof BountyContract) bountyContracts.add((BountyContract) contract);
 		}
 		return bountyContracts;
+	}
+
+	public static void failContract(PlayerData player, EscortContract contract) {
+		player.sendMail(contract.getContractorName(), "Contract Failed", "You have failed to complete the contract \"" + contract.getName() + "\".");
+		cancelContract(contract.getUID());
 	}
 }

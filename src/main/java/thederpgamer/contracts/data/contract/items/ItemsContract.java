@@ -1,4 +1,4 @@
-package thederpgamer.contracts.data.contract;
+package thederpgamer.contracts.data.contract.items;
 
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
@@ -7,6 +7,7 @@ import api.utils.game.inventory.ItemStack;
 import org.json.JSONObject;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.inventory.Inventory;
+import thederpgamer.contracts.data.contract.Contract;
 
 import java.io.IOException;
 
@@ -21,6 +22,7 @@ public class ItemsContract extends Contract {
 
     public ItemsContract(PacketReadBuffer packetReadBuffer) throws IOException {
         super(packetReadBuffer);
+        readFromBuffer(packetReadBuffer);
     }
 
     public ItemsContract(int contractorID, String name, long reward, ItemStack target) {

@@ -1,14 +1,12 @@
 package thederpgamer.contracts.manager;
 
-import api.common.GameCommon;
 import api.utils.StarRunnable;
 import api.utils.other.HashList;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
-import org.schema.game.server.data.simulation.npc.NPCFaction;
 import thederpgamer.contracts.Contracts;
 import thederpgamer.contracts.data.contract.ActiveContractRunnable;
-import thederpgamer.contracts.data.contract.BountyContract;
+import thederpgamer.contracts.data.contract.bounty.BountyContract;
 import thederpgamer.contracts.data.contract.Contract;
 import thederpgamer.contracts.data.player.PlayerData;
 import thederpgamer.contracts.networking.server.ServerDataManager;
@@ -22,19 +20,12 @@ import java.util.List;
  *
  * @author Garret Reichenbach
  */
-public class NPCContractManager {
+public class NPCBountyContractManager {
 
-	private static final HashMap<Integer, NPCFaction> npcFactions = new HashMap<>();
 	private static final HashMap<PlayerData, HashList<Contract, SegmentController>> activeContracts = new HashMap<>();
 	private static final HashList<PlayerData, Contract> spawnQueue = new HashList<>();
 
 	public static void initialize() {
-		for(String i : ConfigManager.getMainConfig().getList("npc-factions")) {
-			int id = Integer.parseInt(i);
-			npcFactions.put(id, (NPCFaction) GameCommon.getGameState().getFactionManager().getFaction(id));
-		}
-		//Todo: Do something with the npcFactions once StarLoader has the new events
-
 		(new StarRunnable() {
 			@Override
 			public void run() {

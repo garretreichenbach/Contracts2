@@ -1,10 +1,12 @@
-package thederpgamer.contracts.data.contract;
+package thederpgamer.contracts.data.contract.bounty;
 
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.json.JSONObject;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
+import thederpgamer.contracts.data.contract.ActiveContractRunnable;
+import thederpgamer.contracts.data.contract.Contract;
 
 import java.io.IOException;
 import java.util.List;
@@ -36,6 +38,7 @@ public class BountyContract extends Contract implements ActiveContractRunnable {
 
     public BountyContract(PacketReadBuffer packetReadBuffer) throws IOException {
         super(packetReadBuffer);
+        readFromBuffer(packetReadBuffer);
     }
 
     public BountyContract(JSONObject json) {
