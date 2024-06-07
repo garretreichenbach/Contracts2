@@ -16,6 +16,7 @@ import org.schema.game.server.data.blueprint.ChildStats;
 import org.schema.game.server.data.blueprint.SegmentControllerOutline;
 import org.schema.game.server.data.blueprint.SegmentControllerSpawnCallbackDirect;
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
+import org.schema.game.server.data.blueprintnw.BlueprintType;
 import org.schema.schine.graphicsengine.core.GlUtil;
 import org.schema.schine.graphicsengine.core.settings.StateParameterNotFoundException;
 import thederpgamer.contracts.manager.ConfigManager;
@@ -65,7 +66,7 @@ public class BlueprintUtils {
 		try {
 			readBPs();
 			for(BlueprintEntry blueprint : blueprintMap.keySet()) {
-				if(blueprintMap.get(blueprint).enemyUsable()) pirateBPs.add(blueprint);
+				if(blueprintMap.get(blueprint).enemyUsable() && blueprint.getType() == BlueprintType.SHIP) pirateBPs.add(blueprint);
 			}
 		} catch(Exception exception) {
 			Contracts.getInstance().logException("An error occurred while getting pirate blueprints", exception);

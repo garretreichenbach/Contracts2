@@ -11,6 +11,7 @@ import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
 import thederpgamer.contracts.data.contract.Contract;
+import thederpgamer.contracts.manager.ConfigManager;
 import thederpgamer.contracts.manager.GUIManager;
 import thederpgamer.contracts.networking.client.ClientActionType;
 import thederpgamer.contracts.networking.client.ClientDataManager;
@@ -118,8 +119,7 @@ public class PlayerContractsScrollableList extends ScrollableTableList<Contract>
 					getState().getController().queueUIAudio("0022_menu_ui - back");
 					contract.getClaimants().remove(GameClient.getClientPlayerState().getName());
 					ClientActionType.CANCEL_CLAIM.send(contract.getUID());
-					if(GUIManager.getInstance().contractsTab != null)
-						GUIManager.getInstance().contractsTab.flagForRefresh();
+					if(GUIManager.getInstance().contractsTab != null) GUIManager.getInstance().contractsTab.flagForRefresh();
 					flagDirty();
 				}
 			}
@@ -177,7 +177,7 @@ public class PlayerContractsScrollableList extends ScrollableTableList<Contract>
 	}
 
 	@Override
-	public void updateListEntries(GUIElementList guiElementList, final Set<Contract> set) {
+	public void updateListEntries(GUIElementList guiElementList, Set<Contract> set) {
 		guiElementList.deleteObservers();
 		guiElementList.addObserver(this);
 		for(final Contract contract : set) {
@@ -207,13 +207,16 @@ public class PlayerContractsScrollableList extends ScrollableTableList<Contract>
 					@Override
 					public void draw() {
 						long timeRemaining = contract.getTimeRemaining(GameClient.getClientPlayerState().getName());
-						setTextSimple(StringTools.formatRaceTime(timeRemaining));
+						if(timeRemaining == 0) timeRemaining = ConfigManager.getMainConfig().getLong("contract-timer-max");
+						String timeRemainingString = StringTools.formatRaceTime(timeRemaining);
+						setTextSimple(timeRemainingString.substring(0, timeRemainingString.indexOf(".")));
 						updateCacheForced();
 						super.draw();
 					}
 				};
-				long timeRemaining = contract.getTimeRemaining(GameClient.getClientPlayerState().getName());
-				timeTextElement.setTextSimple(StringTools.formatRaceTime(timeRemaining));
+				long timeRemaining = ConfigManager.getMainConfig().getLong("contract-timer-max");
+				String timeRemainingString = StringTools.formatRaceTime(timeRemaining);
+				timeTextElement.setTextSimple(timeRemainingString.substring(0, timeRemainingString.indexOf(".")));
 
 				PlayerContractListRow playerContractListRow = new PlayerContractListRow(getState(), contract, nameRowElement, contractTypeRowElement, contractorRowElement, rewardRowElement, timeTextElement);
 				GUIAncor anchor = new GUIAncor(getState(), window.getWidth() - 107.0f, 28.0f) {
