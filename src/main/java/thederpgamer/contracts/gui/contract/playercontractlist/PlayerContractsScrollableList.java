@@ -147,8 +147,8 @@ public class PlayerContractsScrollableList extends ScrollableTableList<Contract>
 					if(contract.canComplete(GameClient.getClientPlayerState())) {
 						getState().getController().queueUIAudio("0022_menu_ui - enter");
 						ClientActionType.COMPLETE_CONTRACT.send(contract.getUID());
-						if(GUIManager.getInstance().contractsTab != null)
-							GUIManager.getInstance().contractsTab.flagForRefresh();
+						ClientDataManager.removeClientData(contract.getUID());
+						if(GUIManager.getInstance().contractsTab != null) GUIManager.getInstance().contractsTab.flagForRefresh();
 						flagDirty();
 					} else
 						(new SimplePopup(getState(), "Cannot Complete Contract", "You must have the contract items in your inventory!")).activate();

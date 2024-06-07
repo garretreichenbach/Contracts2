@@ -206,6 +206,8 @@ public class ContractsScrollableList extends ScrollableTableList<Contract> imple
 							if(contract.canComplete(player)) {
 								getState().getController().queueUIAudio("0022_menu_ui - enter");
 								ClientActionType.COMPLETE_CONTRACT.send(contract.getUID());
+								ClientDataManager.removeClientData(contract.getUID());
+								flagDirty();
 							} else {
 								SimplePopup popup = new SimplePopup(getState(), "Cannot Complete Contract", "You can't complete this contract!");
 								popup.activate();
@@ -263,6 +265,7 @@ public class ContractsScrollableList extends ScrollableTableList<Contract> imple
 							if(contract.canComplete(player)) {
 								getState().getController().queueUIAudio("0022_menu_ui - enter");
 								ClientActionType.COMPLETE_CONTRACT.send(contract.getUID());
+								ClientDataManager.removeClientData(contract.getUID());
 								flagDirty();
 							} else {
 								SimplePopup popup = new SimplePopup(getState(), "Cannot Complete Contract", "You can't complete this contract!");
