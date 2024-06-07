@@ -34,13 +34,13 @@ public class ContractsScrollableList extends ScrollableTableList<Contract> imple
 
 	@Override
 	public void initColumns() {
-		addColumn("Task", 20.0F, new Comparator<Contract>() {
+		addColumn("Task", 30.0f, new Comparator<Contract>() {
 			public int compare(Contract o1, Contract o2) {
 				return o1.getName().compareTo(o2.getName());
 			}
 		});
 
-		addColumn("Type", 7.0F, new Comparator<Contract>() {
+		addColumn("Type", 5.0F, new Comparator<Contract>() {
 			public int compare(Contract o1, Contract o2) {
 				return o1.getContractType().compareTo(o2.getContractType());
 			}
@@ -54,7 +54,7 @@ public class ContractsScrollableList extends ScrollableTableList<Contract> imple
 			}
 		});
 
-		addColumn("Reward", 5.0F, new Comparator<Contract>() {
+		addColumn("Reward", 7.5F, new Comparator<Contract>() {
 			public int compare(Contract o1, Contract o2) {
 				return CompareTools.compare(o1.getReward(), o2.getReward());
 			}
