@@ -17,16 +17,17 @@ import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import org.schema.game.server.data.blueprintnw.BlueprintType;
 import org.schema.schine.graphicsengine.core.GlUtil;
 import org.schema.schine.graphicsengine.core.settings.StateParameterNotFoundException;
+import org.schema.schine.resource.FileExt;
+import org.w3c.tidy.Out;
 import thederpgamer.contracts.Contracts;
 import thederpgamer.contracts.manager.ConfigManager;
 
 import javax.vecmath.Vector3f;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.io.*;
+import java.nio.file.Files;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * [Description]
@@ -186,73 +187,49 @@ public class BlueprintUtils {
 	}
 
 	public static ArrayList<BlueprintEntry> getEscortShips() {
-		final ArrayList<BlueprintEntry> escortShips = new ArrayList<>();
-		try {
-			File tradingGuildBpZip = new File("./data/npcFactions/Trading Guild/blueprints.zip");
-			if(!tradingGuildBpZip.exists()) return null;
-			File unzipTempFolder = new File("./data/npcFactions/Trading Guild/temp");
-			if(unzipTempFolder.exists()) unzipTempFolder.delete();
-			unzipTempFolder.mkdirs();
-			//Unzip the blueprints
-			FileUtils.unzip(tradingGuildBpZip, unzipTempFolder);
-			//Get all the blueprints
-			for(File file : Objects.requireNonNull(unzipTempFolder.listFiles())) {
-				BluePrintController.active.importFile(file, new MayImportCallback() {
-					@Override
-					public void callbackOnImportDenied(BlueprintEntry blueprintEntry) {
-
+		ArrayList<BlueprintEntry> escortShips = new ArrayList<>();
+		InputStream inputStream = Contracts.getInstance().getJarResource("blueprints/trading_guild.zip");
+		if(inputStream != null) {
+			File tempFile = new FileExt("temp.zip");
+			try {
+				org.apache.commons.io.FileUtils.copyInputStreamToFile(inputStream, tempFile);
+				File tempFolder = new FileExt(DataUtils.getWorldDataPath() + "/temp");
+				FileUtils.unzip(tempFile, tempFolder);
+				for(File file : tempFolder.listFiles()) {
+					List<BlueprintEntry> entry = BluePrintController.active.importFile(file, null);
+					for(BlueprintEntry blueprint : entry) {
+						if(blueprint.getType() == BlueprintType.SHIP && blueprint.getName().startsWith("B")) escortShips.add(blueprint);
 					}
-
-					@Override
-					public boolean mayImport(BlueprintEntry blueprintEntry) {
-						return true;
-					}
-
-					@Override
-					public void onImport(BlueprintEntry blueprintEntry) {
-						if(blueprintEntry.getType() == BlueprintType.SHIP && blueprintEntry.getTotalCapacity() <= 0) escortShips.add(blueprintEntry);
-					}
-				});
+				}
+				tempFolder.delete();
+			} catch(Exception exception) {
+				exception.printStackTrace();
+				Contracts.getInstance().logException("An error occurred while getting escort ships", exception);
 			}
-			unzipTempFolder.deleteOnExit();
-		} catch(ImportFailedException | IOException exception) {
-			Contracts.getInstance().logException("An error occurred while getting random cargo ship", exception);
 		}
 		return escortShips;
 	}
 
 	public static ArrayList<BlueprintEntry> getCargoShips() {
-		final ArrayList<BlueprintEntry> cargoShips = new ArrayList<>();
-		try {
-			File tradingGuildBpZip = new File("./data/npcFactions/Trading Guild/blueprints.zip");
-			if(!tradingGuildBpZip.exists()) return null;
-			File unzipTempFolder = new File("./data/npcFactions/Trading Guild/temp");
-			if(unzipTempFolder.exists()) unzipTempFolder.delete();
-			unzipTempFolder.mkdirs();
-			//Unzip the blueprints
-			FileUtils.unzip(tradingGuildBpZip, unzipTempFolder);
-			//Get all the blueprints
-			for(File file : Objects.requireNonNull(unzipTempFolder.listFiles())) {
-				BluePrintController.active.importFile(file, new MayImportCallback() {
-					@Override
-					public void callbackOnImportDenied(BlueprintEntry blueprintEntry) {
-
+		ArrayList<BlueprintEntry> cargoShips = new ArrayList<>();
+		InputStream inputStream = Contracts.getInstance().getJarResource("blueprints/trading_guild.zip");
+		if(inputStream != null) {
+			File tempFile = new File("temp.zip");
+			try {
+				org.apache.commons.io.FileUtils.copyInputStreamToFile(inputStream, tempFile);
+				File tempFolder = new FileExt(DataUtils.getWorldDataPath() + "/temp");
+				FileUtils.unzip(tempFile, tempFolder);
+				for(File file : tempFolder.listFiles()) {
+					List<BlueprintEntry> entry = BluePrintController.active.importFile(file, null);
+					for(BlueprintEntry blueprint : entry) {
+						if(blueprint.getType() == BlueprintType.SHIP && blueprint.getName().startsWith("C")) cargoShips.add(blueprint);
 					}
-
-					@Override
-					public boolean mayImport(BlueprintEntry blueprintEntry) {
-						return true;
-					}
-
-					@Override
-					public void onImport(BlueprintEntry blueprintEntry) {
-						if(blueprintEntry.getType() == BlueprintType.SHIP && blueprintEntry.getTotalCapacity() > 0) cargoShips.add(blueprintEntry);
-					}
-				});
+				}
+				tempFolder.delete();
+			} catch(Exception exception) {
+				exception.printStackTrace();
+				Contracts.getInstance().logException("An error occurred while getting cargo ships", exception);
 			}
-			unzipTempFolder.deleteOnExit();
-		} catch(ImportFailedException | IOException exception) {
-			Contracts.getInstance().logException("An error occurred while getting random cargo ship", exception);
 		}
 		return cargoShips;
 	}

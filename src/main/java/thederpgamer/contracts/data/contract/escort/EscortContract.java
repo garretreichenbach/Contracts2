@@ -5,11 +5,14 @@ import api.network.PacketWriteBuffer;
 import org.json.JSONObject;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
+import org.schema.game.common.data.fleet.FleetMember;
 import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.contracts.data.contract.ActiveContractRunnable;
 import thederpgamer.contracts.data.contract.Contract;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -45,21 +48,20 @@ public class EscortContract extends Contract implements ActiveContractRunnable {
 
 	@Override
 	public List<SegmentController> startRunner(PlayerState player) {
-		return cargoData.spawnCargoShips();
+		return Collections.emptyList();
 	}
 
 	@Override
 	public boolean updateRunner(PlayerState player, List<?> data) {
-		HashMap<SegmentController, Double> hpPercents = getHPPercents((List<SegmentController>) data);
-		for(SegmentController ship : hpPercents.keySet()) {
-			if(hpPercents.get(ship) <= 0.0) return true; //All are dead, stop the runner
+		//Check if all ships have reached the end sector
+		for(Object object : data) {
+			FleetMember fleetMember = (FleetMember) object;
+			if(!fleetMember.getSector().equals(cargoData.getEndSector())) {
+				completed = false;
+				return true;
+			}
 		}
-
-		for(Object ship : data) {
-			if(!(((SegmentController) ship).getSector(new Vector3i()).equals(cargoData.getEndSector()))) return false; //Not all ships have reached the end sector
-		}
-		completed = true;
-		return true;
+		return false;
 	}
 
 	@Override
@@ -105,15 +107,6 @@ public class EscortContract extends Contract implements ActiveContractRunnable {
 		json.put("cargoData", cargoData.toJSON());
 		json.put("completed", completed);
 		return json;
-	}
-
-	public HashMap<SegmentController, Double> getHPPercents(List<SegmentController> ships) {
-		HashMap<SegmentController, Double> hpPercents = new HashMap<>();
-		for(SegmentController ship : ships) {
-			if(!ship.isCoreOverheating() && ship.getHpController().getHpPercent() > 0.0) hpPercents.put(ship, ship.getHpController().getHpPercent());
-			else hpPercents.put(ship, 0.0);
-		}
-		return hpPercents;
 	}
 
 	public EscortCargoData getCargoData() {

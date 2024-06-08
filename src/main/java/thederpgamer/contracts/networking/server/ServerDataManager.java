@@ -17,6 +17,7 @@ import thederpgamer.contracts.data.contract.ActiveContractRunnable;
 import thederpgamer.contracts.data.contract.Contract;
 import thederpgamer.contracts.data.contract.bounty.BountyContract;
 import thederpgamer.contracts.data.contract.bounty.BountyTargetMobSpawnGroup;
+import thederpgamer.contracts.data.contract.escort.EscortCargoData;
 import thederpgamer.contracts.data.contract.escort.EscortContract;
 import thederpgamer.contracts.data.contract.items.ItemsContract;
 import thederpgamer.contracts.data.player.PlayerData;
@@ -263,8 +264,10 @@ public class ServerDataManager {
 						contract.getClaimants().put(player.name, contract.getClaimants().get(player.name) - 1000);
 						addOrUpdateContract(contract);
 						ServerActionType.UPDATE_CONTRACT_TIMER.send(getPlayerState(player), contract.getUID(), contract.getClaimants().get(player.name));
-						if(contract instanceof ActiveContractRunnable && NPCBountyContractManager.isActiveFor(player, contract)) {
+						if(contract instanceof BountyContract && NPCBountyContractManager.isActiveFor(player, contract)) {
 							if(!NPCBountyContractManager.update(player, contract)) cancel();
+						} else if(contract instanceof EscortContract && EscortContractManager.isActiveFor(player, (EscortContract) contract)) {
+							if(!EscortContractManager.update(player, (EscortContract) contract)) cancel();
 						}
 					}
 				}
@@ -301,7 +304,8 @@ public class ServerDataManager {
 	public static void timeoutContract(Contract contract, PlayerData player) throws PlayerNotFountException {
 		contract.getClaimants().remove(player.name);
 		player.contracts.remove(contract.getUID());
-		if(contract instanceof ActiveContractRunnable) NPCBountyContractManager.removeFromActive(player, contract);
+		if(contract instanceof BountyContract) NPCBountyContractManager.removeFromActive(player, contract);
+		else if(contract instanceof EscortContract) EscortContractManager.removeFromActive(player, (EscortContract) contract);
 		addOrUpdateContract(contract);
 		addOrUpdatePlayerData(player);
 		player.sendMail(contract.getContractor().getName(), "Contract Cancellation", contract.getContractor().getName() + " has cancelled your contract because you took too long!");
@@ -339,6 +343,11 @@ public class ServerDataManager {
 	            contractName = "Defeat the " + group.getName() + " in sector " + group.getSector();
 				randomContract = new BountyContract(FactionManager.TRAIDING_GUILD_ID, contractName, (long) (group.calculateReward() * 1.3f), group);
 	            break;
+			case ESCORT:
+				EscortCargoData cargoData = EscortCargoData.generateRandom();
+				contractName = "Escort the cargo from sector " + cargoData.getStartSector() + " to sector " + cargoData.getEndSector();
+				randomContract = new EscortContract(FactionManager.TRAIDING_GUILD_ID, contractName, cargoData.getReward(), cargoData);
+				break;
 		}
 		if(randomContract != null) addOrUpdateContract(randomContract);
 	}
