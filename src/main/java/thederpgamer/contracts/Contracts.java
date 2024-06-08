@@ -14,8 +14,6 @@ import thederpgamer.contracts.networking.client.ClientActionType;
 import thederpgamer.contracts.networking.server.ServerActionType;
 import thederpgamer.contracts.networking.server.ServerDataManager;
 
-import java.util.Arrays;
-
 public class Contracts extends StarMod {
 
     private static Contracts instance;

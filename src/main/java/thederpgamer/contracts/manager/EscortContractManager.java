@@ -5,18 +5,15 @@ import api.utils.StarRunnable;
 import api.utils.other.HashList;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.ElementCountMap;
-import org.schema.game.common.controller.SegmentController;
-import org.schema.game.common.controller.Ship;
 import org.schema.game.common.data.fleet.Fleet;
-import org.schema.game.common.data.fleet.FleetCommandTypes;
-import org.schema.game.common.data.fleet.FleetManager;
 import org.schema.game.common.data.fleet.FleetMember;
+import org.schema.game.common.data.player.faction.Faction;
 import org.schema.game.common.data.player.faction.FactionManager;
+import org.schema.game.server.data.ServerConfig;
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import org.schema.game.server.data.simulation.npc.NPCFaction;
 import thederpgamer.contracts.Contracts;
 import thederpgamer.contracts.data.contract.escort.EscortContract;
-import thederpgamer.contracts.data.contract.escort.EscortShipData;
 import thederpgamer.contracts.data.player.PlayerData;
 import thederpgamer.contracts.networking.server.ServerDataManager;
 import thederpgamer.contracts.utils.BlueprintUtils;
@@ -25,11 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-/**
- * [Description]
- *
- * @author Garret Reichenbach
- */
 public class EscortContractManager {
 
 	private static final HashMap<PlayerData, HashMap<EscortContract, Fleet>> activeContracts = new HashMap<>();
@@ -67,15 +59,17 @@ public class EscortContractManager {
 		HashMap<EscortContract, Fleet> map = new HashMap<>();
 		NPCFaction traders = getTradersFaction();
 		ElementCountMap countMap = contract.getCargoData().toCountMap();
-		Fleet fleet = traders.getFleetManager().spawnTradingFleet(countMap, contract.getCargoData().getStartSector(), contract.getCargoData().getEndSector());
-		fleet.sendFleetCommand(FleetCommandTypes.TRADE_FLEET, contract.getCargoData().getEndSector());
+		Fleet fleet = traders.getFleetManager().spawnTradingFleet(countMap, contract.getCargoData().getStartSector(), contract.getCargoData().getEndSector(), true);
 		map.put(contract, fleet);
 		activeContracts.put(player, map);
 		spawnQueue.remove(player);
 	}
 
 	public static NPCFaction getTradersFaction() {
-		return (NPCFaction) GameCommon.getGameState().getFactionManager().getFaction(FactionManager.NPC_FACTION_START);
+		if(((int) ServerConfig.NPC_FACTION_SPAWN_LIMIT.getCurrentState()) < 1) throw new RuntimeException("Trading Guild NPC Faction doesn't exist!");
+		Faction faction = GameCommon.getGameState().getFactionManager().getFaction(FactionManager.NPC_FACTION_START);
+		if(faction == null) throw new RuntimeException("Trading Guild NPC Faction doesn't exist!");
+		else return (NPCFaction) faction;
 	}
 
 	public static void removeFromActive(PlayerData player, EscortContract contract) {

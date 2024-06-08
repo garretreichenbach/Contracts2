@@ -8,19 +8,14 @@ import org.json.JSONObject;
 import org.schema.common.util.linAlg.Vector3fTools;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.ElementCountMap;
-import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.element.ElementInformation;
-import org.schema.game.common.data.player.faction.FactionManager;
 import thederpgamer.contracts.data.JSONSerializable;
 import thederpgamer.contracts.data.NetworkSerializable;
 import thederpgamer.contracts.networking.server.ServerDataManager;
-import thederpgamer.contracts.utils.BlueprintUtils;
-import thederpgamer.contracts.utils.FlavorUtils;
 import thederpgamer.contracts.utils.SectorUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * [Description]
@@ -56,7 +51,7 @@ public class EscortCargoData implements JSONSerializable, NetworkSerializable {
 		return new EscortCargoData(start, end, (long) (totalPrice * 1.3f), cargo.toArray(new ItemStack[0]));
 	}
 
-	public EscortCargoData(Vector3i startSector, Vector3i endSector, long reward, ItemStack[] cargo, EscortShipData... escortShips) {
+	public EscortCargoData(Vector3i startSector, Vector3i endSector, long reward, ItemStack[] cargo) {
 		this.startSector = startSector;
 		this.endSector = endSector;
 		this.cargo = cargo;
