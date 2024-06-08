@@ -24,7 +24,7 @@ public class GUIManager {
     }
 
     public void createContractsShopTab(MainWindowTabAddEvent event) {
-        if(event.getTitle().equals(Lng.str("SHOP")) && contractsTab == null) {
+        if(event.getTitle().equals(Lng.str("SHOP")) && (contractsTab == null)) {
             contractsTab = new ContractsTab(event.getWindow());
             contractsTab.onInit();
             event.getWindow().getTabs().add(contractsTab);

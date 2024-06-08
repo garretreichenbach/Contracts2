@@ -14,6 +14,8 @@ import thederpgamer.contracts.networking.client.ClientActionType;
 import thederpgamer.contracts.networking.server.ServerActionType;
 import thederpgamer.contracts.networking.server.ServerDataManager;
 
+import java.util.Arrays;
+
 public class Contracts extends StarMod {
 
     private static Contracts instance;
@@ -48,6 +50,12 @@ public class Contracts extends StarMod {
                 }
             }).runTimer(this, ConfigManager.getMainConfig().getLong("auto-generate-contract-check-timer"));
         }
+    }
+
+    @Override
+    public void logException(String message, Exception exception) {
+        super.logException(message, exception);
+        exception.printStackTrace();
     }
 
     private void registerCommands() {

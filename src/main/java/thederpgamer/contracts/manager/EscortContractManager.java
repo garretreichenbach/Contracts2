@@ -8,6 +8,7 @@ import org.schema.game.common.controller.ElementCountMap;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.controller.Ship;
 import org.schema.game.common.data.fleet.Fleet;
+import org.schema.game.common.data.fleet.FleetCommandTypes;
 import org.schema.game.common.data.fleet.FleetManager;
 import org.schema.game.common.data.fleet.FleetMember;
 import org.schema.game.common.data.player.faction.FactionManager;
@@ -67,7 +68,7 @@ public class EscortContractManager {
 		NPCFaction traders = getTradersFaction();
 		ElementCountMap countMap = contract.getCargoData().toCountMap();
 		Fleet fleet = traders.getFleetManager().spawnTradingFleet(countMap, contract.getCargoData().getStartSector(), contract.getCargoData().getEndSector());
-		fleet.setCurrentMoveTarget(contract.getCargoData().getEndSector());
+		fleet.sendFleetCommand(FleetCommandTypes.TRADE_FLEET, contract.getCargoData().getEndSector());
 		map.put(contract, fleet);
 		activeContracts.put(player, map);
 		spawnQueue.remove(player);
