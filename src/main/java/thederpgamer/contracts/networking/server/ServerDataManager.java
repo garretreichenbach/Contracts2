@@ -245,19 +245,21 @@ public class ServerDataManager {
 			@Override
 			public void run() {
 				if(contract.getClaimants().containsKey(player.name)) {
-					if(contract.getClaimants().get(player.name) <= 0) {
-						try {
-							timeoutContract(contract, player);
-						} catch(PlayerNotFountException exception) {
-							exception.printStackTrace();
-						}
-						cancel();
-					} else {
-						contract.getClaimants().put(player.name, contract.getClaimants().get(player.name) - 1000);
-						addOrUpdateContract(contract);
-						ServerActionType.UPDATE_CONTRACT_TIMER.send(getPlayerState(player), contract.getUID(), contract.getClaimants().get(player.name));
-						if(contract instanceof ActiveContractRunnable && NPCContractManager.isActiveFor(player, contract)) {
-							if(!NPCContractManager.update(player, contract)) cancel();
+					if(getPlayerState(player) != null) {
+						if(contract.getClaimants().get(player.name) <= 0) {
+							try {
+								timeoutContract(contract, player);
+							} catch(PlayerNotFountException exception) {
+								exception.printStackTrace();
+							}
+							cancel();
+						} else {
+							contract.getClaimants().put(player.name, contract.getClaimants().get(player.name) - 1000);
+							addOrUpdateContract(contract);
+							ServerActionType.UPDATE_CONTRACT_TIMER.send(getPlayerState(player), contract.getUID(), contract.getClaimants().get(player.name));
+							if(contract instanceof ActiveContractRunnable && NPCContractManager.isActiveFor(player, contract)) {
+								if(!NPCContractManager.update(player, contract)) cancel();
+							}
 						}
 					}
 				}
