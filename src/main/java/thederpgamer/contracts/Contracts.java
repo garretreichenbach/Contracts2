@@ -1,5 +1,7 @@
 package thederpgamer.contracts;
 
+import api.common.GameCommon;
+import api.common.GameServer;
 import api.listener.events.controller.ServerInitializeEvent;
 import api.mod.StarLoader;
 import api.mod.StarMod;
@@ -16,6 +18,8 @@ import thederpgamer.contracts.manager.NPCContractManager;
 import thederpgamer.contracts.networking.client.ClientActionType;
 import thederpgamer.contracts.networking.server.ServerActionType;
 import thederpgamer.contracts.networking.server.ServerDataManager;
+
+import java.util.Arrays;
 
 public class Contracts extends StarMod {
 
@@ -50,6 +54,30 @@ public class Contracts extends StarMod {
                 }
             }).runTimer(this, ConfigManager.getMainConfig().getLong("auto-generate-contract-check-timer"));
         }
+    }
+
+    @Override
+    public void logInfo(String message) {
+        super.logInfo(message);
+        System.out.println("[INFO]: " + message);
+    }
+
+    @Override
+    public void logWarning(String message) {
+        super.logWarning(message);
+        System.err.println("[WARNING]: " + message);
+    }
+
+    @Override
+    public void logException(String message, Exception exception) {
+        super.logException(message, exception);
+        System.err.println("[EXCEPTION]: " + message + "\n" + exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
+    }
+
+    @Override
+    public void logFatal(String message, Exception exception) {
+        logException(message, exception);
+        if(GameCommon.getGameState().isOnServer()) GameServer.getServerState().addCountdownMessage(10, "Server will perform an emergency shutdown due to a fatal error: " + message);
     }
 
     private void registerCommands() {
