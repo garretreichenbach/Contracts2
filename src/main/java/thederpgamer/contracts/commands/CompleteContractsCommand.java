@@ -1,13 +1,14 @@
-package thederpgamer.contracts.data.commands;
+package thederpgamer.contracts.commands;
 
 import api.mod.StarMod;
 import api.utils.game.PlayerUtils;
 import api.utils.game.chat.CommandInterface;
 import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.contracts.Contracts;
-import thederpgamer.contracts.data.contract.Contract;
+import thederpgamer.contracts.data.contract.ContractData;
+import thederpgamer.contracts.data.contract.ContractDataManager;
 import thederpgamer.contracts.data.player.PlayerData;
-import thederpgamer.contracts.networking.server.ServerDataManager;
+import thederpgamer.contracts.data.player.PlayerDataManager;
 
 import javax.annotation.Nullable;
 
@@ -48,13 +49,18 @@ public class CompleteContractsCommand implements CommandInterface {
         if(args.length >= 1) {
             PlayerData target = null;
             if(args.length > 1) {
-                if(ServerDataManager.getPlayerData(args[1]) != null) target = ServerDataManager.getPlayerData(args[1]);
-                else PlayerUtils.sendMessage(sender, "Player " + args[1] + " doesn't exist!");
-            } else target = ServerDataManager.getPlayerData(sender.getName());
-            if(args[0].equalsIgnoreCase("all") || args[0].equalsIgnoreCase("*")) {
-                completeContracts(sender, target, ServerDataManager.getPlayerContracts(target).toArray(new Contract[0]));
+                if(PlayerDataManager.getInstance(sender.isOnServer()).getFromName(args[1], sender.isOnServer()) != null) {
+                    target = PlayerDataManager.getInstance(sender.isOnServer()).getFromName(args[1], sender.isOnServer());
+                } else {
+                    PlayerUtils.sendMessage(sender, "Player " + args[1] + " doesn't exist!");
+                }
             } else {
-                Contract contract = ServerDataManager.getContractFromId(args[0].trim());
+                target = PlayerDataManager.getInstance(sender.isOnServer()).getFromName(sender.getName(), sender.isOnServer());
+            }
+            if(args[0].equalsIgnoreCase("all") || args[0].equalsIgnoreCase("*")) {
+                completeContracts(sender, target, target.getContracts().toArray(new ContractData[0]));
+            } else {
+                ContractData contract = ContractDataManager.getInstance(sender.isOnServer()).getFromUUID(args[0].trim(), sender.isOnServer());
                 if(contract != null) completeContracts(sender, target, contract);
                 else PlayerUtils.sendMessage(sender, "No valid contracts found with id " + args[0].trim());
             }
@@ -72,20 +78,24 @@ public class CompleteContractsCommand implements CommandInterface {
         return Contracts.getInstance();
     }
 
-    private void completeContracts(PlayerState sender, PlayerData target, Contract... contracts) {
+    private void completeContracts(PlayerState sender, PlayerData target, ContractData... contracts) {
         if(contracts != null && contracts.length >= 1) {
             StringBuilder builder = new StringBuilder();
-            builder.append("Completed the following contracts for player ").append(target.name).append(":\n");
+            builder.append("Completed the following contracts for player ").append(target.getName()).append(":\n");
             for(int i = 0; i < contracts.length; i ++) {
-                Contract contract = contracts[i];
-                if(!contract.getClaimants().containsKey(target)) PlayerUtils.sendMessage(sender, "Player " + target.name + " doesn't have any active contracts matching name " + contract.getName() + ".");
+                ContractData contract = contracts[i];
+                if(!contract.getClaimants().containsKey(target.getName())) {
+                    PlayerUtils.sendMessage(sender, "Player " + target.getName() + " doesn't have any active contracts matching name " + contract.getName() + ".");
+                }
                 else {
                     builder.append(contract.getName());
-                    if(i < contracts.length - 1) builder.append(", ");
-                    ServerDataManager.completeContract(target, contract);
+                    if(i < contracts.length - 1) {
+                        builder.append(", ");
+                    }
+                    ContractDataManager.completeContract(target, contract);
                 }
             }
             PlayerUtils.sendMessage(sender, builder.toString().trim());
-        } else PlayerUtils.sendMessage(sender, "No active contracts found for player" + target.name + ".");
+        } else PlayerUtils.sendMessage(sender, "No active contracts found for player" + target.getName() + ".");
     }
 }

@@ -2,7 +2,6 @@ package thederpgamer.contracts.gui.contract.playercontractlist;
 
 import api.common.GameClient;
 import api.common.GameCommon;
-import api.utils.gui.SimplePopup;
 import org.schema.common.util.CompareTools;
 import org.schema.common.util.StringTools;
 import org.schema.game.server.data.PlayerNotFountException;
@@ -10,17 +9,19 @@ import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
-import thederpgamer.contracts.data.contract.Contract;
+import thederpgamer.contracts.data.DataManager;
+import thederpgamer.contracts.data.contract.ContractData;
+import thederpgamer.contracts.data.contract.ContractDataManager;
+import thederpgamer.contracts.data.player.PlayerData;
+import thederpgamer.contracts.data.player.PlayerDataManager;
 import thederpgamer.contracts.manager.ConfigManager;
 import thederpgamer.contracts.manager.GUIManager;
-import thederpgamer.contracts.networking.client.ClientActionType;
-import thederpgamer.contracts.networking.client.ClientDataManager;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Set;
 
-public class PlayerContractsScrollableList extends ScrollableTableList<Contract> implements GUIActiveInterface {
+public class PlayerContractsScrollableList extends ScrollableTableList<ContractData> implements GUIActiveInterface {
 
 	private final GUIElement window;
 
@@ -31,60 +32,60 @@ public class PlayerContractsScrollableList extends ScrollableTableList<Contract>
 
 	@Override
 	public void initColumns() {
-		addColumn("Task", 20.0F, new Comparator<Contract>() {
-			public int compare(Contract o1, Contract o2) {
+		addColumn("Task", 20.0F, new Comparator<ContractData>() {
+			public int compare(ContractData o1, ContractData o2) {
 				return o1.getName().compareTo(o2.getName());
 			}
 		});
 
-		addColumn("Type", 7.0F, new Comparator<Contract>() {
-			public int compare(Contract o1, Contract o2) {
+		addColumn("Type", 7.0F, new Comparator<ContractData>() {
+			public int compare(ContractData o1, ContractData o2) {
 				return o1.getContractType().compareTo(o2.getContractType());
 			}
 		});
 
-		addColumn("Contractor", 7.0F, new Comparator<Contract>() {
-			public int compare(Contract o1, Contract o2) {
+		addColumn("Contractor", 7.0F, new Comparator<ContractData>() {
+			public int compare(ContractData o1, ContractData o2) {
 				String name1 = GameCommon.getGameState().getFactionManager().getFactionName(o1.getContractor().getIdFaction());
 				String name2 = GameCommon.getGameState().getFactionManager().getFactionName(o2.getContractor().getIdFaction());
 				return name1.compareTo(name2);
 			}
 		});
 
-		addColumn("Reward", 5.0F, new Comparator<Contract>() {
-			public int compare(Contract o1, Contract o2) {
+		addColumn("Reward", 5.0F, new Comparator<ContractData>() {
+			public int compare(ContractData o1, ContractData o2) {
 				return CompareTools.compare(o1.getReward(), o2.getReward());
 			}
 		});
 
-		addColumn("Time Remaining", 10.0F, new Comparator<Contract>() {
-			public int compare(Contract o1, Contract o2) {
+		addColumn("Time Remaining", 10.0F, new Comparator<ContractData>() {
+			public int compare(ContractData o1, ContractData o2) {
 				return CompareTools.compare(o1.getTimeRemaining(GameClient.getClientPlayerState().getName()), o2.getTimeRemaining(GameClient.getClientPlayerState().getName()));
 			}
 		});
 
-		addTextFilter(new GUIListFilterText<Contract>() {
-			public boolean isOk(String s, Contract contract) {
+		addTextFilter(new GUIListFilterText<ContractData>() {
+			public boolean isOk(String s, ContractData contract) {
 				return contract.getName().toLowerCase().contains(s.toLowerCase());
 			}
 		}, ControllerElement.FilterRowStyle.LEFT);
 
-		addDropdownFilter(new GUIListFilterDropdown<Contract, Contract.ContractType>(Contract.ContractType.values()) {
-			public boolean isOk(Contract.ContractType contractType, Contract contract) {
+		addDropdownFilter(new GUIListFilterDropdown<ContractData, ContractData.ContractType>(ContractData.ContractType.values()) {
+			public boolean isOk(ContractData.ContractType contractType, ContractData contract) {
 				switch(contractType) {
 					case ALL:
 						return true;
 					case BOUNTY:
-						return contract.getContractType() == Contract.ContractType.BOUNTY;
+						return contract.getContractType() == ContractData.ContractType.BOUNTY;
 					case ITEMS:
-						return contract.getContractType() == Contract.ContractType.ITEMS;
+						return contract.getContractType() == ContractData.ContractType.ITEMS;
 				}
 				return true;
 			}
 
-		}, new CreateGUIElementInterface<Contract.ContractType>() {
+		}, new CreateGUIElementInterface<ContractData.ContractType>() {
 			@Override
-			public GUIElement create(Contract.ContractType contractType) {
+			public GUIElement create(ContractData.ContractType contractType) {
 				GUIAncor anchor = new GUIAncor(getState(), 10.0F, 24.0F);
 				GUITextOverlayTableDropDown dropDown;
 				(dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(contractType.displayName);
@@ -104,22 +105,31 @@ public class PlayerContractsScrollableList extends ScrollableTableList<Contract>
 	}
 
 	@Override
-	public ArrayList<Contract> getElementList() {
-		return ClientDataManager.getClaimedContracts();
+	public ArrayList<ContractData> getElementList() {
+		ArrayList<ContractData> contracts = new ArrayList<>();
+		for(ContractData contract : ContractDataManager.getInstance(false).getClientCache()) {
+			if(contract.getClaimants().containsKey(GameClient.getClientPlayerState().getName())) {
+				contracts.add(contract);
+			}
+		}
+		return contracts;
 	}
 
-	public GUIHorizontalButtonTablePane redrawButtonPane(final Contract contract, GUIAncor anchor) throws PlayerNotFountException {
+	public GUIHorizontalButtonTablePane redrawButtonPane(final ContractData contract, GUIAncor anchor) throws PlayerNotFountException {
 		GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, anchor);
 		buttonPane.onInit();
-
+		buttonPane.onInit();
+		final ContractDataManager dataManager = ContractDataManager.getInstance(false);
+		final PlayerData playerData = PlayerDataManager.getInstance(false).getClientOwnData();
 		buttonPane.addButton(0, 0, "CANCEL CLAIM", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
 			@Override
 			public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 				if(mouseEvent.pressedLeftMouse()) {
-					getState().getController().queueUIAudio("0022_menu_ui - back");
+					getState().getController().queueUIAudio("0022_menu_ui - cancel");
 					contract.getClaimants().remove(GameClient.getClientPlayerState().getName());
-					ClientActionType.CANCEL_CLAIM.send(contract.getUID());
-					if(GUIManager.getInstance().contractsTab != null) GUIManager.getInstance().contractsTab.flagForRefresh();
+					dataManager.sendPacket(contract, DataManager.UPDATE_DATA, true);
+					if(GUIManager.getInstance().contractsTab != null)
+						GUIManager.getInstance().contractsTab.flagForRefresh();
 					flagDirty();
 				}
 			}
@@ -145,13 +155,16 @@ public class PlayerContractsScrollableList extends ScrollableTableList<Contract>
 			public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 				if(mouseEvent.pressedLeftMouse()) {
 					if(contract.canComplete(GameClient.getClientPlayerState())) {
-						getState().getController().queueUIAudio("0022_menu_ui - enter");
-						ClientActionType.COMPLETE_CONTRACT.send(contract.getUID());
-						ClientDataManager.removeClientData(contract.getUID());
-						if(GUIManager.getInstance().contractsTab != null) GUIManager.getInstance().contractsTab.flagForRefresh();
+						getState().getController().queueUIAudio("0022_action - buttons push small");
+						ContractDataManager.completeContract(playerData, contract);
+						if(GUIManager.getInstance().contractsTab != null) {
+							GUIManager.getInstance().contractsTab.flagForRefresh();
+						}
 						flagDirty();
-					} else
-						(new SimplePopup(getState(), "Cannot Complete Contract", "You must have the contract items in your inventory!")).activate();
+					} else {
+						getState().getController().queueUIAudio("0022_menu_ui - error");
+						getState().getController().popupAlertTextMessage("You must have the contract items in your inventory!");
+					}
 				}
 			}
 
@@ -177,10 +190,10 @@ public class PlayerContractsScrollableList extends ScrollableTableList<Contract>
 	}
 
 	@Override
-	public void updateListEntries(GUIElementList guiElementList, Set<Contract> set) {
+	public void updateListEntries(GUIElementList guiElementList, Set<ContractData> set) {
 		guiElementList.deleteObservers();
 		guiElementList.addObserver(this);
-		for(final Contract contract : set) {
+		for(final ContractData contract : set) {
 			try {
 				GUITextOverlayTable nameTextElement;
 				(nameTextElement = new GUITextOverlayTable(10, 10, getState())).setTextSimple(contract.getName());
@@ -207,7 +220,8 @@ public class PlayerContractsScrollableList extends ScrollableTableList<Contract>
 					@Override
 					public void draw() {
 						long timeRemaining = contract.getTimeRemaining(GameClient.getClientPlayerState().getName());
-						if(timeRemaining == 0) timeRemaining = ConfigManager.getMainConfig().getLong("contract-timer-max");
+						if(timeRemaining == 0)
+							timeRemaining = ConfigManager.getMainConfig().getLong("contract-timer-max");
 						String timeRemainingString = StringTools.formatRaceTime(timeRemaining);
 						setTextSimple(timeRemainingString.substring(0, timeRemainingString.indexOf(".")));
 						updateCacheForced();
@@ -239,9 +253,9 @@ public class PlayerContractsScrollableList extends ScrollableTableList<Contract>
 		guiElementList.updateDim();
 	}
 
-	public class PlayerContractListRow extends ScrollableTableList<Contract>.Row {
+	public class PlayerContractListRow extends ScrollableTableList<ContractData>.Row {
 
-		public PlayerContractListRow(InputState inputState, Contract contract, GUIElement... guiElements) {
+		public PlayerContractListRow(InputState inputState, ContractData contract, GUIElement... guiElements) {
 			super(inputState, contract, guiElements);
 			highlightSelect = true;
 			highlightSelectSimple = true;

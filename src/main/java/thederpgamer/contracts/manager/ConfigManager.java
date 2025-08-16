@@ -3,14 +3,10 @@ package thederpgamer.contracts.manager;
 import api.mod.config.FileConfiguration;
 import thederpgamer.contracts.Contracts;
 
-/**
- * [Description]
- *
- * @author Garret Reichenbach
- */
 public class ConfigManager {
 
     private static final String[] defaultMainConfig = {
+            "debug-mode: false",
             "contract-timer-max: 3600000",
             "client-max-active-contracts: 5",
             "auto-generate-contracts: true",

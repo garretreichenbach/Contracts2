@@ -2,6 +2,7 @@ package thederpgamer.contracts.utils;
 
 import api.common.GameServer;
 import com.bulletphysics.linearmath.Transform;
+import org.json.JSONObject;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
@@ -21,7 +22,6 @@ import org.schema.schine.graphicsengine.core.GlUtil;
 import org.schema.schine.graphicsengine.core.settings.StateParameterNotFoundException;
 import thederpgamer.contracts.manager.ConfigManager;
 import thederpgamer.contracts.Contracts;
-import thederpgamer.contracts.data.contract.BountyTargetMob;
 
 import javax.vecmath.Vector3f;
 import java.io.IOException;
@@ -104,10 +104,12 @@ public class BlueprintUtils {
 		return GameServer.getServerState().getCatalogManager();
 	}
 
-	public static SegmentController spawnAsMob(BountyTargetMob mob, Vector3i sector, int factionId) {
+	public static SegmentController spawnAsMob(JSONObject mob, Vector3i sector, int factionId) {
 		try {
-			BlueprintEntry entry = getBlueprint(mob.getBPName());
-			if(GameServer.getServerState().getSegmentControllersByName().containsKey(mob.getSpawnName())) return null;
+			BlueprintEntry entry = getBlueprint(mob.getString("bp_name"));
+			if(GameServer.getServerState().getSegmentControllersByName().containsKey(mob.getString("spawn_name"))) {
+				return null;
+			}
 			if(entry != null) {
 				Transform transform = new Transform();
 				transform.setIdentity();
@@ -118,7 +120,7 @@ public class BlueprintUtils {
 				forward.scaleAdd(1.15f, size);
 				transform.origin.set(forward);
 				try {
-					SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, mob.getBPName(), mob.getSpawnName(), transform, -1, factionId, sector, "Server", PlayerState.buffer, null, true, new ChildStats(false));
+					SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, mob.getString("bp_name"), mob.getString("spawn_name"), transform, -1, factionId, sector, "Server", PlayerState.buffer, null, true, new ChildStats(false));
 					return outline.spawn(sector, false, new ChildStats(false), new SegmentControllerSpawnCallbackDirect(GameServer.getServerState(), sector) {
 						@Override
 						public void onNoDocker() {

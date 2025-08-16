@@ -9,6 +9,7 @@ import api.listener.events.player.PlayerSpawnEvent;
 import api.mod.StarLoader;
 import api.utils.StarRunnable;
 import api.utils.game.SegmentControllerUtils;
+import org.json.JSONObject;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.controller.damage.Damager;
@@ -21,12 +22,11 @@ import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import org.schema.schine.input.InputState;
 import org.schema.schine.network.server.ServerMessage;
 import thederpgamer.contracts.Contracts;
+import thederpgamer.contracts.data.DataManager;
 import thederpgamer.contracts.data.contract.BountyContract;
-import thederpgamer.contracts.data.contract.Contract;
+import thederpgamer.contracts.data.contract.ContractData;
+import thederpgamer.contracts.data.contract.ContractDataManager;
 import thederpgamer.contracts.gui.contract.playercontractlist.PlayerContractsDialog;
-import thederpgamer.contracts.networking.client.ClientDataManager;
-import thederpgamer.contracts.networking.server.ServerActionType;
-import thederpgamer.contracts.networking.server.ServerDataManager;
 
 import java.util.ArrayList;
 
@@ -49,37 +49,26 @@ public class EventManager {
 						}
 					}
 					if(killer != null) {
-						ArrayList<BountyContract> bounties = ServerDataManager.getBountyContracts();
+						ContractDataManager instance = ContractDataManager.getInstance(event.getPlayer().isOnServer());
+						ArrayList<BountyContract> bounties = (ArrayList<BountyContract>) instance.getContractsOfType(BountyContract.class, event.getPlayer().isOnServer());
 						for(BountyContract bounty : bounties) {
-							if(bounty.getTarget().equals(event.getPlayer().getName())) {
-								if(event.getPlayer().equals(killer) && event.getPlayer().getFactionId() != killer.getFactionId() && !killer.isAdmin()) return; //Prevent player from killing themselves
-								bounty.setKilledTarget(true);
-								ServerDataManager.addOrUpdateContract(bounty);
-								killer.sendServerMessage(new ServerMessage(new String[] {Lng.str("You can now turn in the \"" + bounty.getName() + "\" contract!")},  ServerMessage.MESSAGE_TYPE_INFO));
-								return;
+							if(bounty.getBountyType() == BountyContract.PLAYER) {
+								JSONObject targetData = bounty.getTargetData();
+								if(targetData.has("player_name")) {
+									String targetName = targetData.getString("player_name");
+									if(targetName.equals(event.getPlayer().getName())) {
+										if(event.getPlayer().equals(killer) && event.getPlayer().getFactionId() != killer.getFactionId() && !killer.isAdmin()) {
+											return; //Prevent player from killing themselves
+										}
+										bounty.setKilledTarget(event.getPlayer().isOnServer(), true);
+										instance.sendPacket(bounty, DataManager.UPDATE_DATA, !event.getPlayer().isOnServer());
+										killer.sendServerMessage(new ServerMessage(new String[] {Lng.str("You can now turn in the \"" + bounty.getName() + "\" contract!")},  ServerMessage.MESSAGE_TYPE_INFO));
+										return;
+									}
+								}
 							}
 						}
 					}
-				}
-			}
-		}, instance);
-
-		StarLoader.registerListener(PlayerSpawnEvent.class, new Listener<PlayerSpawnEvent>() {
-			@Override
-			public void onEvent(final PlayerSpawnEvent event) {
-				final ArrayList<Contract> contractDataList = new ArrayList<>(ServerDataManager.getAllContracts());
-				if(event.getPlayer().getOwnerState() != null) {
-					ServerActionType.SEND_CONTRACTS_LIST.send(event.getPlayer().getOwnerState(), contractDataList);
-				} else { //Wait for player to spawn
-					(new StarRunnable() {
-						@Override
-						public void run() {
-							if(event.getPlayer().getOwnerState() != null) {
-								ServerActionType.SEND_CONTRACTS_LIST.send(event.getPlayer().getOwnerState(), contractDataList);
-								cancel();
-							}
-						}
-					}).runTimer(instance, 10);
 				}
 			}
 		}, instance);
@@ -104,7 +93,7 @@ public class EventManager {
 				}, new GUIActivationHighlightCallback() {
 					@Override
 					public boolean isHighlighted(InputState inputState) {
-						return ClientDataManager.canCompleteAny();
+						return ContractDataManager.getInstance(false).canCompleteAny();
 					}
 
 					@Override

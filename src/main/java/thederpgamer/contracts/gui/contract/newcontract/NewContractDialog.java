@@ -1,7 +1,6 @@
 package thederpgamer.contracts.gui.contract.newcontract;
 
 import api.common.GameClient;
-import api.utils.game.inventory.ItemStack;
 import api.utils.gui.SimplePopup;
 import org.schema.game.client.controller.PlayerInput;
 import org.schema.game.client.data.GameClientState;
@@ -11,23 +10,18 @@ import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import org.schema.schine.input.KeyEventInterface;
 import org.schema.schine.input.KeyboardMappings;
-import thederpgamer.contracts.data.contract.BountyContract;
-import thederpgamer.contracts.data.contract.Contract;
-import thederpgamer.contracts.data.contract.ItemsContract;
-import thederpgamer.contracts.data.player.PlayerData;
-import thederpgamer.contracts.networking.client.ClientActionType;
-import thederpgamer.contracts.networking.server.ServerDataManager;
+import thederpgamer.contracts.data.contract.ContractData;
 
 public class NewContractDialog extends PlayerInput {
 
     private final NewContractPanel panel;
-    private Contract.ContractType selectedType;
+    private ContractData.ContractType selectedType;
 
     public NewContractDialog(GameClientState gameClientState) {
         super(gameClientState);
         panel = new NewContractPanel(getState(), this);
         panel.onInit();
-        selectedType = Contract.ContractType.BOUNTY;
+        selectedType = ContractData.ContractType.BOUNTY;
     }
 
     @Override
@@ -63,38 +57,12 @@ public class NewContractDialog extends PlayerInput {
                     } else {
                         switch(selectedType) {
                             case BOUNTY:
-                                String name = panel.getName();
-                                int bountyAmount = panel.getReward();
-                                PlayerData playerData = ServerDataManager.getPlayerData(name);
-                                PlayerData currentPlayerData = ServerDataManager.getPlayerData(currentPlayer.getName());
-                                if(playerData == null) {
-                                    (new SimplePopup(getState(), "Cannot Add Bounty", "Player " + name + " does not exist!")).activate();
-                                } else {
-                                    if(currentPlayer.getName().equals(name) && !currentPlayer.isAdmin()) {
-                                        (new SimplePopup(getState(), "Cannot Add Bounty", "You can't put a bounty on yourself!")).activate();
-                                    } else if(currentPlayer.getFactionId() == playerData.factionID && !currentPlayer.isAdmin()) {
-                                        (new SimplePopup(getState(), "Cannot Add Bounty", "You can't put a bounty on a member of your own faction!")).activate();
-                                    } else if(ServerDataManager.getFactionAllies(currentPlayerData.factionID).contains(playerData.factionID) && !currentPlayer.isAdmin()) {
-                                        (new SimplePopup(getState(), "Cannot Add Bounty", "You can't put a bounty on a member of an allied faction!")).activate();
-                                    } else {
-                                        BountyContract contract = new BountyContract(currentPlayer.getFactionId(), "Kill " + name, bountyAmount, playerData.name);
-                                        ClientActionType.CREATE_CONTRACT.send(contract);
-                                        currentPlayer.setCredits(currentPlayer.getCredits() - contract.getReward());
-                                        deactivate();
-                                    }
-                                }
+                                panel.createBountyContract();
+                                deactivate();
                                 break;
                             case ITEMS:
-                                int count = panel.getCount();
-                                if(count <= 0) {
-                                    (new SimplePopup(getState(), "Cannot Add Contract", "The amount must be above 0!")).activate();
-                                } else {
-                                    ItemStack itemStack = new ItemStack(panel.getSelectedBlockType().id, count);
-                                    ItemsContract contract = new ItemsContract(currentPlayer.getFactionId(), "Obtain x" + count + " " + itemStack.getElementInfo().getName(), panel.getReward(), itemStack);
-                                    ClientActionType.CREATE_CONTRACT.send(contract);
-                                    currentPlayer.setCredits(currentPlayer.getCredits() - contract.getReward());
-                                    deactivate();
-                                }
+                                panel.createItemsContract();
+                                deactivate();
                                 break;
                             default:
                                 throw new IllegalStateException("Unexpected value: " + selectedType);
@@ -103,10 +71,10 @@ public class NewContractDialog extends PlayerInput {
                 } else if(guiElement.getUserPointer().equals("CANCEL") || guiElement.getUserPointer().equals("X")) {
                     deactivate();
                 } else if(guiElement.getUserPointer().equals("BOUNTY")) {
-                    selectedType = Contract.ContractType.BOUNTY;
+                    selectedType = ContractData.ContractType.BOUNTY;
                     panel.drawBountyPanel();
                 } else if(guiElement.getUserPointer().equals("ITEMS")) {
-                    selectedType = Contract.ContractType.ITEMS;
+                    selectedType = ContractData.ContractType.ITEMS;
                     panel.drawItemsPanel();
                 }
             }
