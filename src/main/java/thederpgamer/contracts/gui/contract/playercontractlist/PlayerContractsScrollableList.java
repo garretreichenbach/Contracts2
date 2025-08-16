@@ -12,6 +12,7 @@ import org.schema.schine.input.InputState;
 import thederpgamer.contracts.data.DataManager;
 import thederpgamer.contracts.data.contract.ContractData;
 import thederpgamer.contracts.data.contract.ContractDataManager;
+import thederpgamer.contracts.data.contract.active.ActiveContractData;
 import thederpgamer.contracts.data.player.PlayerData;
 import thederpgamer.contracts.data.player.PlayerDataManager;
 import thederpgamer.contracts.manager.ConfigManager;
@@ -19,9 +20,10 @@ import thederpgamer.contracts.manager.GUIManager;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.Set;
 
-public class PlayerContractsScrollableList extends ScrollableTableList<ContractData> implements GUIActiveInterface {
+public class PlayerContractsScrollableList extends ScrollableTableList<ActiveContractData> implements GUIActiveInterface {
 
 	private final GUIElement window;
 
@@ -32,34 +34,34 @@ public class PlayerContractsScrollableList extends ScrollableTableList<ContractD
 
 	@Override
 	public void initColumns() {
-		addColumn("Task", 20.0F, new Comparator<ContractData>() {
-			public int compare(ContractData o1, ContractData o2) {
+		addColumn("Task", 20.0F, new Comparator<ActiveContractData>() {
+			public int compare(ActiveContractData ActiveContractData, ActiveContractData o2) {
 				return o1.getName().compareTo(o2.getName());
 			}
 		});
 
-		addColumn("Type", 7.0F, new Comparator<ContractData>() {
-			public int compare(ContractData o1, ContractData o2) {
+		addColumn("Type", 7.0F, new Comparator<ActiveContractData>() {
+			public int compare(ActiveContractData o1, ActiveContractData o2) {
 				return o1.getContractType().compareTo(o2.getContractType());
 			}
 		});
 
 		addColumn("Contractor", 7.0F, new Comparator<ContractData>() {
-			public int compare(ContractData o1, ContractData o2) {
+			public int compare(ActiveContractData o1, ActiveContractData o2) {
 				String name1 = GameCommon.getGameState().getFactionManager().getFactionName(o1.getContractor().getIdFaction());
 				String name2 = GameCommon.getGameState().getFactionManager().getFactionName(o2.getContractor().getIdFaction());
 				return name1.compareTo(name2);
 			}
 		});
 
-		addColumn("Reward", 5.0F, new Comparator<ContractData>() {
-			public int compare(ContractData o1, ContractData o2) {
+		addColumn("Reward", 5.0F, new Comparator<ActiveContractData>() {
+			public int compare(ActiveContractData o1, ActiveContractData o2) {
 				return CompareTools.compare(o1.getReward(), o2.getReward());
 			}
 		});
 
-		addColumn("Time Remaining", 10.0F, new Comparator<ContractData>() {
-			public int compare(ContractData o1, ContractData o2) {
+		addColumn("Time Remaining", 10.0F, new Comparator<ActiveContractData>() {
+			public int compare(ActiveContractData o1, ActiveContractData o2) {
 				return CompareTools.compare(o1.getTimeRemaining(GameClient.getClientPlayerState().getName()), o2.getTimeRemaining(GameClient.getClientPlayerState().getName()));
 			}
 		});
@@ -201,7 +203,7 @@ public class PlayerContractsScrollableList extends ScrollableTableList<ContractD
 				(nameRowElement = new GUIClippedRow(getState())).attach(nameTextElement);
 
 				GUITextOverlayTable contractTypeTextElement;
-				(contractTypeTextElement = new GUITextOverlayTable(10, 10, getState())).setTextSimple(contract.getContractType().displayName);
+				(contractTypeTextElement = new GUITextOverlayTable(10, 10, getState())).setTextSimple(contract.getContractType().displayName.toUpperCase(Locale.ENGLISH));
 				GUIClippedRow contractTypeRowElement;
 				(contractTypeRowElement = new GUIClippedRow(getState())).attach(contractTypeTextElement);
 

@@ -1,6 +1,5 @@
 package thederpgamer.contracts.data.contract;
 
-import api.common.GameClient;
 import api.mod.config.PersistentObjectUtil;
 import org.schema.game.common.data.element.ElementInformation;
 import org.schema.game.common.data.element.ElementKeyMap;
@@ -8,7 +7,6 @@ import org.schema.game.common.data.player.faction.FactionManager;
 import thederpgamer.contracts.Contracts;
 import thederpgamer.contracts.data.DataManager;
 import thederpgamer.contracts.data.SerializableData;
-import thederpgamer.contracts.data.player.PlayerData;
 
 import java.util.*;
 
@@ -27,15 +25,6 @@ public class ContractDataManager extends DataManager<ContractData> {
 			}
 		}
 		return instance;
-	}
-
-	public static void completeContract(PlayerData playerData, ContractData contract) {
-		ContractDataManager dataManager = getInstance(playerData.getPlayerState().isOnServer());
-		playerData.removeContract(contract.getUUID());
-		dataManager.removeData(contract, playerData.getPlayerState().isOnServer());
-		contract.onCompletion(playerData.getPlayerState());
-		playerData.sendMail(contract.getContractor().getName(), "Contract Completion", "You have completed the contract \"" + contract.getName() + "\"\nand have been rewarded " + contract.getReward() + " credits!");
-		dataManager.sendPacket(contract, REMOVE_DATA, !playerData.getPlayerState().isOnServer());
 	}
 
 	@Override
@@ -118,14 +107,5 @@ public class ContractDataManager extends DataManager<ContractData> {
 			}
 		}
 		return contracts;
-	}
-
-	public boolean canCompleteAny() {
-		for(ContractData contract : getCache(false)) {
-			if(contract.canComplete(GameClient.getClientPlayerState())) {
-				return true;
-			}
-		}
-		return false;
 	}
 }

@@ -38,6 +38,10 @@ public class PlayerData extends SerializableData {
 		return GameCommon.getPlayerFromName(name);
 	}
 
+	public boolean isOnServer() {
+		return getPlayerState() != null && getPlayerState().isOnServer();
+	}
+
 	@Override
 	public JSONObject serialize() {
 		JSONObject data = new JSONObject();

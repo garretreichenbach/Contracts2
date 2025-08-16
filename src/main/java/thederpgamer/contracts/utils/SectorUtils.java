@@ -57,4 +57,8 @@ public class SectorUtils {
 		}
 		return false;
 	}
+
+	public static boolean isInRange(Vector3i currentSector, Vector3i sector, int i) {
+		return Math.abs(currentSector.x - sector.x) <= i && Math.abs(currentSector.y - sector.y) <= i && Math.abs(currentSector.z - sector.z) <= i;
+	}
 }

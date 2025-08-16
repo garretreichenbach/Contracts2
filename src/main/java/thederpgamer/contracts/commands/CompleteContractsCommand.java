@@ -86,8 +86,7 @@ public class CompleteContractsCommand implements CommandInterface {
                 ContractData contract = contracts[i];
                 if(!contract.getClaimants().containsKey(target.getName())) {
                     PlayerUtils.sendMessage(sender, "Player " + target.getName() + " doesn't have any active contracts matching name " + contract.getName() + ".");
-                }
-                else {
+                } else {
                     builder.append(contract.getName());
                     if(i < contracts.length - 1) {
                         builder.append(", ");

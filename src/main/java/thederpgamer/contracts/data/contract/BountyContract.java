@@ -3,42 +3,32 @@ package thederpgamer.contracts.data.contract;
 import api.network.PacketReadBuffer;
 import org.json.JSONObject;
 import org.schema.common.util.linAlg.Vector3i;
-import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import thederpgamer.contracts.Contracts;
-import thederpgamer.contracts.data.DataManager;
 import thederpgamer.contracts.manager.ConfigManager;
 import thederpgamer.contracts.utils.BlueprintUtils;
 import thederpgamer.contracts.utils.FlavorUtils;
 import thederpgamer.contracts.utils.SectorUtils;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Random;
 
-public class BountyContract extends ContractData implements ActiveContractRunnable {
+public class BountyContract extends ContractData {
 
 	public static final int PLAYER = 0;
 	public static final int MOB = 1;
 
-	private boolean killedTarget;
-	private Vector3i sector;
 	private JSONObject targetData;
 
-	protected BountyContract(int contractorID, String name, Vector3i sector, JSONObject targetData) {
+	protected BountyContract(int contractorID, String name, JSONObject targetData) {
 		super(ContractType.BOUNTY, contractorID, name, targetData.getLong("reward"));
-		this.sector = sector;
 		this.targetData = targetData;
 	}
 
 	public BountyContract(int contractorID, String name, long reward, JSONObject targetData) {
-		this(contractorID, name, SectorUtils.getRandomSector(10), targetData);
-		if(targetData.has("sector")) {
-			JSONObject sectorData = targetData.getJSONObject("sector");
-			sector = new Vector3i(sectorData.getInt("x"), sectorData.getInt("y"), sectorData.getInt("z"));
-		} else {
-			sector = new Vector3i();
-		}
-		killedTarget = false;
+		this(contractorID, name, targetData);
 		this.reward = reward;
 		this.name = name;
 		this.contractorID = contractorID;
@@ -58,7 +48,7 @@ public class BountyContract extends ContractData implements ActiveContractRunnab
 			String name = FlavorUtils.generateGroupName(FlavorUtils.FlavorType.PIRATE);
 			Vector3i sector = SectorUtils.getRandomSector(10);
 			String contractName = "Defeat " + name + " in Sector " + sector;
-			return new BountyContract(factionId, contractName, sector, targetData);
+			return new BountyContract(factionId, contractName, targetData);
 		}
 		throw new IllegalStateException("Failed to generate a valid BountyContract for mobs.");
 	}
@@ -119,7 +109,6 @@ public class BountyContract extends ContractData implements ActiveContractRunnab
 	public JSONObject serialize() {
 		JSONObject json = super.serialize();
 		json.put("target", targetData);
-		json.put("killedTarget", killedTarget);
 		return json;
 	}
 
@@ -127,12 +116,6 @@ public class BountyContract extends ContractData implements ActiveContractRunnab
 	public void deserialize(JSONObject data) {
 		super.deserialize(data);
 		targetData = data.getJSONObject("target");
-		killedTarget = data.getBoolean("killedTarget");
-	}
-
-	@Override
-	public boolean canComplete(PlayerState player) {
-		return killedTarget || (player.isOnServer() && player.isAdmin());
 	}
 
 	@Override
@@ -140,120 +123,96 @@ public class BountyContract extends ContractData implements ActiveContractRunnab
 		return ContractType.BOUNTY;
 	}
 
-	@Override
-	public void onCompletion(PlayerState player) {
+	/*
+	JSONArray spawns = stateData.optJSONArray("spawns");
+		ArrayList<String> destroyed = new ArrayList<>();
+		ArrayList<String> active = new ArrayList<>();
+		boolean changed = false;
+		if(spawns != null) {
+			for(int i = 0; i < spawns.length(); i++) {
+				JSONObject spawnData = spawns.getJSONObject(i);
+				String status = spawnData.optString("status", "active");
+				if(status.equals("active")) {
+					int controllerId = spawnData.getInt("controller_id");
+					Sendable sendable = GameCommon.getGameObject(controllerId);
+					if(sendable == null) {
+						// If the controller is not found, consider it destroyed.
+						if(getBountyType() == MOB) {
+							spawnData.put("status", "destroyed");
+							setKilledTarget(playerState.isOnServer(), true);
+							destroyed.add(spawnData.getString("spawn_name"));
+							continue;
+						}
+					}
+					if(!(sendable instanceof ManagedUsableSegmentController<?>)) {
+						Contracts.getInstance().logWarning("Controller with ID " + controllerId + " is not a valid ManagedUsableSegmentController.");
+						continue;
+					}
+					ManagedUsableSegmentController<?> controller = (ManagedUsableSegmentController<?>) sendable;
+					if(controller.isMarkedForPermanentDelete() || controller.isMarkedForDeleteVolatile() || controller.isCoreOverheating()) {
+						// If the controller is marked for deletion or overheating, consider the target killed.
+						if(getBountyType() == MOB && !destroyed.contains(spawnData.getString("spawn_name"))) {
+							spawnData.put("status", "destroyed");
+							setKilledTarget(playerState.isOnServer(), true);
+							destroyed.add(spawnData.getString("spawn_name"));
+							changed = true;
+						}
+					} else {
+						// If the controller is still active, add it to the active list.
+						active.add(spawnData.getString("spawn_name"));
+					}
+				}
+			}
+		}
+		StringBuilder message = new StringBuilder();
+		if(active.isEmpty() && !destroyed.isEmpty()) {
+			message.append("All Bounty Targets destroyed. Contract can now be completed.\n");
+			stateData.put("completed", true);
+		} else if(!active.isEmpty()) {
+			message.append("Bounty Target(s) destroyed: ");
+			if(destroyed.isEmpty()) {
+				message.append("None\n");
+			} else {
+				for(String name : destroyed) {
+					message.append(name).append(", ");
+				}
+				message.setLength(message.length() - 2);
+			}
+			message.append(" (").append(destroyed.size()).append(" / ").append(active.size() + destroyed.size()).append(")\n");
+		}
+		if(message.length() > 0 && changed) {
+			// If there are any messages to send, send them to the player.
+			playerState.sendServerMessagePlayerInfo(new Object[] {message.toString()});
+		}
 
-	}
-
-	@Override
-	public boolean canStartRunner(PlayerState player) {
-        return player.getCurrentSector().equals(sector);
-	}
-
-	@Override
-	public List<?> startRunner(PlayerState player) {
-		return Collections.emptyList();
-	}
-
-	@Override
-	public boolean updateRunner(PlayerState player, List<?> data) {
-		return false;
-	}
-
-	public int getBountyType() {
-		return targetData.getInt("target_type");
-	}
-
-	public Vector3i getSector() {
-		JSONObject sectorData = targetData.getJSONObject("sector");
-		return new Vector3i(sectorData.getInt("x"), sectorData.getInt("y"), sectorData.getInt("z"));
-	}
-
-	public JSONObject getTargetData() {
-		return targetData;
-	}
-
-	public void setKilledTarget(boolean onServer, boolean killedTarget) {
-		this.killedTarget = killedTarget;
-		ContractDataManager.getInstance(onServer).sendPacket(this, DataManager.UPDATE_DATA, !onServer);
-	}
-
-   /* @Override
-    public List<SegmentController> startRunner(PlayerState player) {
-        return targetGroup.spawnGroup();
-    }
-
-    @Override
-    public boolean updateRunner(PlayerState player, List<?> spawnedMobs) {
-        if(targetGroup.isGroupDead((List<SegmentController>) spawnedMobs)) {
-            killedTarget = true;
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public void onCompletion(PlayerState player) {
-        assert player.isOnServer();
-        player.setCredits(player.getCredits() + reward);
-    }
-
-    @Override
-    public void readFromBuffer(PacketReadBuffer readBuffer) throws IOException {
-        super.readFromBuffer(readBuffer);
-        target = readBuffer.readString();
-        killedTarget = readBuffer.readBoolean();
-        targetType = BountyTargetType.values()[readBuffer.readInt()];
-        if(targetType == BountyTargetType.NPC) {
-            targetGroup = new BountyTargetMobSpawnGroup(readBuffer);
-        }
-    }
-
-    @Override
-    public void writeToBuffer(PacketWriteBuffer writeBuffer) throws IOException {
-        super.writeToBuffer(writeBuffer);
-        writeBuffer.writeString(target);
-        writeBuffer.writeBoolean(killedTarget);
-        writeBuffer.writeInt(targetType.ordinal());
-        if(targetType == BountyTargetType.NPC) targetGroup.writeToBuffer(writeBuffer);
-    }
-
-    @Override
-    public void fromJSON(JSONObject json) {
-        super.fromJSON(json);
-        target = json.getString("target");
-        killedTarget = json.getBoolean("killedTarget");
-        if(json.has("targetType")) targetType = BountyTargetType.valueOf(json.getString("targetType"));
-        if(json.has("targetGroup")) targetGroup = new BountyTargetMobSpawnGroup(json.getJSONObject("targetGroup"));
-    }
-
-    @Override
-    public JSONObject toJSON() {
-        JSONObject json = super.toJSON();
-        json.put("target", target);
-        json.put("killedTarget", killedTarget);
-        json.put("targetType", targetType.toString());
-        if(targetType == BountyTargetType.NPC) json.put("targetGroup", targetGroup.toJSON());
-        return json;
-    }
-
-    public String getTarget() {
-        return target;
-    }
-
-    public boolean hasKilledTarget() {
-        return killedTarget;
-    }
-
-    public void setKilledTarget(boolean killedTarget) {
-        this.killedTarget = killedTarget;
-    }
-
-    public BountyTargetType getTargetType() {
-        return targetType;
-    }
-
-    public BountyTargetMobSpawnGroup getTargetGroup() {
-        return targetGroup;
-    }*/
+	public JSONObject spawnTargetMobs() {
+		assert getBountyType() == MOB : "BountyContract can only spawn mobs for bounty type MOB.";
+		JSONObject spawnedData = new JSONObject();
+		JSONArray spawns = new JSONArray();
+		if(targetData.has("mob_list")) {
+			JSONArray mobList = targetData.getJSONArray("mob_list");
+			for(int i = 0; i < mobList.length(); i++) {
+				JSONObject mobData = mobList.getJSONObject(i);
+				Vector3i sector = getSector();
+				int factionId = -1;
+				SegmentController controller = BlueprintUtils.spawnAsMob(mobData, sector, factionId);
+				if(controller == null) {
+					Contracts.getInstance().logWarning("Failed to spawn mob: " + mobData.getString("bp_name") + " in sector " + sector);
+					continue;
+				}
+				JSONObject spawnData = new JSONObject();
+				spawnData.put("bp_name", mobData.getString("bp_name"));
+				spawnData.put("spawn_name", mobData.getString("spawn_name"));
+				spawnData.put("sector", sector);
+				spawnData.put("controller_id", controller.getId());
+				spawnData.put("status", "active");
+				spawns.put(spawnData);
+			}
+		} else {
+			Contracts.getInstance().logWarning("No mobs to spawn for bounty contract.");
+		}
+		spawnedData.put("sector", getSector());
+		spawnedData.put("spawns", spawns);
+		return spawnedData;
+	}*/
 }

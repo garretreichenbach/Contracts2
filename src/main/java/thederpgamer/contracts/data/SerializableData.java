@@ -5,22 +5,20 @@ import api.network.PacketWriteBuffer;
 import org.json.JSONObject;
 import thederpgamer.contracts.data.contract.ContractData;
 import thederpgamer.contracts.data.contract.ContractDataManager;
+import thederpgamer.contracts.data.contract.active.ActiveContractData;
+import thederpgamer.contracts.data.contract.active.ActiveContractDataManager;
 import thederpgamer.contracts.data.player.PlayerData;
 import thederpgamer.contracts.data.player.PlayerDataManager;
 
 import java.io.IOException;
 import java.util.UUID;
 
-/**
- * [Description]
- *
- * @author TheDerpGamer
- */
 public abstract class SerializableData {
 
 	public enum DataType {
 		PLAYER_DATA(PlayerData.class, PlayerDataManager.class),
-		CONTRACT_DATA(ContractData.class, ContractDataManager.class);
+		CONTRACT_DATA(ContractData.class, ContractDataManager.class),
+		ACTIVE_CONTRACT_DATA(ActiveContractData.class, ActiveContractDataManager.class);
 
 		private final Class<? extends SerializableData> dataClass;
 		private final Class<? extends DataManager<?>> dataManagerClass;

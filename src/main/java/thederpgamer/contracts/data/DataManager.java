@@ -7,6 +7,8 @@ import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.contracts.Contracts;
 import thederpgamer.contracts.data.contract.ContractData;
 import thederpgamer.contracts.data.contract.ContractDataManager;
+import thederpgamer.contracts.data.contract.active.ActiveContractData;
+import thederpgamer.contracts.data.contract.active.ActiveContractDataManager;
 import thederpgamer.contracts.data.player.PlayerData;
 import thederpgamer.contracts.data.player.PlayerDataManager;
 import thederpgamer.contracts.networking.SendDataPacket;
@@ -31,6 +33,8 @@ public abstract class DataManager<E extends SerializableData> {
 			return PlayerDataManager.getInstance(server);
 		} else if(dataManagerClass.equals(ContractData.class)) {
 			return ContractDataManager.getInstance(server);
+		} else if(dataManagerClass.equals(ActiveContractData.class)) {
+			return ActiveContractDataManager.getInstance(server);
 		}
 		return null;
 	}

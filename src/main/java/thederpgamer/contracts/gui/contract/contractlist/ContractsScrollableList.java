@@ -2,7 +2,6 @@ package thederpgamer.contracts.gui.contract.contractlist;
 
 import api.common.GameClient;
 import api.common.GameCommon;
-import api.utils.gui.SimplePopup;
 import org.schema.common.util.CompareTools;
 import org.schema.game.client.controller.PlayerOkCancelInput;
 import org.schema.game.common.data.player.PlayerState;
@@ -12,15 +11,14 @@ import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
 import thederpgamer.contracts.data.DataManager;
-import thederpgamer.contracts.data.contract.ActiveContractRunnable;
 import thederpgamer.contracts.data.contract.ContractData;
 import thederpgamer.contracts.data.contract.ContractDataManager;
 import thederpgamer.contracts.data.player.PlayerData;
 import thederpgamer.contracts.data.player.PlayerDataManager;
-import thederpgamer.contracts.manager.ConfigManager;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.Set;
 
 public class ContractsScrollableList extends ScrollableTableList<ContractData> implements GUIActiveInterface {
@@ -86,7 +84,7 @@ public class ContractsScrollableList extends ScrollableTableList<ContractData> i
 			public GUIElement create(ContractData.ContractType contractType) {
 				GUIAncor anchor = new GUIAncor(getState(), 10.0F, 24.0F);
 				GUITextOverlayTableDropDown dropDown;
-				(dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(contractType.displayName);
+				(dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(contractType.displayName.toUpperCase(Locale.ENGLISH));
 				dropDown.setPos(4.0F, 4.0F, 0.0F);
 				anchor.setUserPointer(contractType);
 				anchor.attach(dropDown);
@@ -162,11 +160,12 @@ public class ContractsScrollableList extends ScrollableTableList<ContractData> i
 		} else {
 			buttonPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, anchor);
 			buttonPane.onInit();
-			if(contract.canClaim(player)) {
+			/*if(contract.canClaim(player)) {
 				buttonPane.addButton(0, 0, "CLAIM CONTRACT", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 						if(mouseEvent.pressedLeftMouse()) {
+							PlayerData playerData = PlayerDataManager.getInstance(false).getClientOwnData();
 							if(contract.canClaim(player)) {
 								if(playerData.getContracts().size() >= ConfigManager.getMainConfig().getInt("client-max-active-contracts")) {
 									getState().getController().popupAlertTextMessage("You have too many active contracts!");
@@ -174,7 +173,7 @@ public class ContractsScrollableList extends ScrollableTableList<ContractData> i
 									return;
 								}
 								getState().getController().queueUIAudio("0022_action - buttons push small");
-								if(contract instanceof ActiveContractRunnable && !((ActiveContractRunnable) contract).canStartRunner(player)) {
+								if(contract instanceof ActiveContractInterface && !((ActiveContractInterface) contract).canStart(playerData, contract)) {
 									getState().getController().popupAlertTextMessage("You must be in the correct sector to start this contract!");
 									return;
 								}
@@ -206,7 +205,7 @@ public class ContractsScrollableList extends ScrollableTableList<ContractData> i
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 						if(mouseEvent.pressedLeftMouse()) {
-							if(contract.canComplete(player)) {
+							if(contract.canComplete(player, false)) {
 								getState().getController().queueUIAudio("0022_menu_ui - enter");
 								dataManager.completeContract(playerData, contract);
 //								ClientActionType.COMPLETE_CONTRACT.send(contract.getUID());
@@ -292,7 +291,7 @@ public class ContractsScrollableList extends ScrollableTableList<ContractData> i
 						return contract.canComplete(player);
 					}
 				});
-			}
+			}*/
 		}
 		return buttonPane;
 	}

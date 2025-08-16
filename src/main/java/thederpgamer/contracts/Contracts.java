@@ -7,7 +7,10 @@ import api.network.packets.PacketUtil;
 import api.utils.StarRunnable;
 import thederpgamer.contracts.commands.*;
 import thederpgamer.contracts.data.contract.ContractDataManager;
-import thederpgamer.contracts.manager.*;
+import thederpgamer.contracts.manager.ConfigManager;
+import thederpgamer.contracts.manager.EventManager;
+import thederpgamer.contracts.manager.GUIManager;
+import thederpgamer.contracts.manager.TestManager;
 import thederpgamer.contracts.networking.SendDataPacket;
 import thederpgamer.contracts.networking.SyncRequestPacket;
 
@@ -37,7 +40,6 @@ public class Contracts extends StarMod {
     @Override
     public void onServerCreated(ServerInitializeEvent event) {
         if(ConfigManager.getMainConfig().getBoolean("auto-generate-contracts")) {
-            NPCContractManager.initialize();
             (new StarRunnable() {
                 @Override
                 public void run() {
