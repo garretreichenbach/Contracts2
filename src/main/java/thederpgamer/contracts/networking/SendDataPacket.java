@@ -21,6 +21,7 @@ public class SendDataPacket extends Packet {
 	public SendDataPacket() {}
 
 	public SendDataPacket(SerializableData data, int type) {
+		if(data == null) throw new IllegalArgumentException("Data cannot be null!");
 		this.data = data;
 		this.type = type;
 		dataType = data.getDataType();

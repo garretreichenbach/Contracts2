@@ -20,6 +20,7 @@ public class PlayerData extends SerializableData {
 	private int factionID;
 
 	public PlayerData(PlayerState playerState) {
+		super(DataType.PLAYER_DATA);
 		name = playerState.getName();
 		contracts = new ArrayList<>();
 		factionID = playerState.getFactionId();

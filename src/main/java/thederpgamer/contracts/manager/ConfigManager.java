@@ -10,10 +10,10 @@ public class ConfigManager {
             "contract-timer-max: 3600000",
             "client-max-active-contracts: 5",
             "auto-generate-contracts: true",
-            "max-auto-generate-contracts: 15",
+            "max-auto-generate-contracts: 10",
             "auto-generate-contract-check-timer: 3000",
-            "contract-timeout-timer: 600000", //If nobody claims a contract after this time, it will be removed
-            "blueprint-update-interval: 300000", //Update bp list every 5 minutes
+            "contract-timeout-timer: 900000",
+            "blueprint-update-interval: 300000",
             "max-bounty-mob-count: 12",
             "max-bounty-mob-combined-mass: 350000"
     };

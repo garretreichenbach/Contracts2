@@ -5,9 +5,7 @@ import api.listener.Listener;
 import api.listener.events.gui.GUITopBarCreateEvent;
 import api.listener.events.gui.MainWindowTabAddEvent;
 import api.listener.events.player.PlayerDeathEvent;
-import api.listener.events.player.PlayerSpawnEvent;
 import api.mod.StarLoader;
-import api.utils.StarRunnable;
 import api.utils.game.SegmentControllerUtils;
 import org.json.JSONObject;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
@@ -24,7 +22,6 @@ import org.schema.schine.network.server.ServerMessage;
 import thederpgamer.contracts.Contracts;
 import thederpgamer.contracts.data.DataManager;
 import thederpgamer.contracts.data.contract.BountyContract;
-import thederpgamer.contracts.data.contract.ContractData;
 import thederpgamer.contracts.data.contract.ContractDataManager;
 import thederpgamer.contracts.gui.contract.playercontractlist.PlayerContractsDialog;
 
@@ -32,7 +29,7 @@ import java.util.ArrayList;
 
 public class EventManager {
 
-	public static void initialize(final Contracts instance) {
+	public static void initialize(Contracts instance) {
 		StarLoader.registerListener(PlayerDeathEvent.class, new Listener<PlayerDeathEvent>() {
 			@Override
 			public void onEvent(PlayerDeathEvent event) {

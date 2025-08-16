@@ -60,7 +60,7 @@ public class BountyContract extends ContractData implements ActiveContractRunnab
 			String contractName = "Defeat " + name + " in Sector " + sector;
 			return new BountyContract(factionId, contractName, sector, targetData);
 		}
-		return null;
+		throw new IllegalStateException("Failed to generate a valid BountyContract for mobs.");
 	}
 
 	private static JSONObject generateMobTarget() {
@@ -74,6 +74,7 @@ public class BountyContract extends ContractData implements ActiveContractRunnab
 				double maxMass = ConfigManager.getMainConfig().getDouble("max-bounty-mob-combined-mass");
 				ArrayList<JSONObject> mobList = new ArrayList<>();
 				double totalMass = 0.0;
+				long reward = 0L;
 				int mobCount = random.nextInt(maxMobs) + 1;
 				for(int i = 0; i < mobCount; i++) {
 					BlueprintEntry blueprint = blueprints.get(random.nextInt(blueprints.size()));
@@ -82,6 +83,7 @@ public class BountyContract extends ContractData implements ActiveContractRunnab
 						JSONObject mobData = new JSONObject();
 						mobData.put("bp_name", blueprint.getName());
 						mobData.put("spawn_name", FlavorUtils.generateSpawnName(FlavorUtils.FlavorType.PIRATE));
+						reward += blueprint.getPrice();
 						double mass = blueprint.getMass();
 						if(totalMass + mass <= maxMass) {
 							mobList.add(mobData);
@@ -98,7 +100,7 @@ public class BountyContract extends ContractData implements ActiveContractRunnab
 					sectorData.put("z", sector.z);
 					targetData.put("sector", sectorData);
 					targetData.put("target_type", MOB);
-					targetData.put("reward", ConfigManager.getMainConfig().getLong("bounty-mob-reward"));
+					targetData.put("reward", reward * 1.3f);
 				} else {
 					Contracts.getInstance().logWarning("No valid mobs generated for bounty target.");
 					return null;
