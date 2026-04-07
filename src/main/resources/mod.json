@@ -1,12 +1,12 @@
 {
   "name": "Contracts",
-  "author": "TheDerpGamer",
+  "author": "VideoGoose",
   "description": "Adds completable contracts for player and faction interaction.",
-  "version": "2.1.0",
-  "starmade_version": "0.203.175",
+  "version": "2.2.0",
+  "starmade_version": "0.205.4",
   "client_mod": false,
   "server_mod": false,
-  "main_class": "thederpgamer.contracts.Contracts",
+  "main_class": "videogoose.contracts.Contracts",
   "smd_resource_id": 8637,
   "dependencies": [
     -1

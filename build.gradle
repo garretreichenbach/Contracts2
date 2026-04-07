@@ -1,34 +1,65 @@
 plugins {
     id 'java'
     id 'application'
-    id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
-
-def starmadeDirectory = project.property("starmade_root")
+def configuredStarmadeRoot = (project.findProperty("starmade_root") ?: "").toString().trim()
+def autoPreparedStarmadeRoot = layout.projectDirectory.dir('.ci/starmade/StarMade').asFile.absolutePath + File.separator
+def useAutoPreparedStarmadeRoot = configuredStarmadeRoot.isEmpty() || configuredStarmadeRoot == 'STARMADE_PATH'
+def starmadeDirectory = useAutoPreparedStarmadeRoot ? autoPreparedStarmadeRoot : configuredStarmadeRoot
 def modName = project.property("mod_name")
 group = project.property('mod_org_id')
 version = project.property('mod_version')
 mainClassName = group + modName
+def starmadeJar = file(starmadeDirectory + "StarMade.jar")
+def starmadeLibDir = file(starmadeDirectory + "lib")
 
-repositories {
-    mavenCentral()
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 repositories {
-    mavenCentral()
+    mavenCentral {
+        metadataSources {
+            mavenPom()
+            artifact()
+            ignoreGradleMetadataRedirection()
+        }
+    }
     maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    implementation(files(starmadeDirectory + "StarMade.jar"))
-    implementation(fileTree(dir: (starmadeDirectory + "lib"), include: "*.jar"))
-    implementation(fileTree(dir: ("lib"), include: "*.jar"))
+    compileOnly(files(starmadeJar))
+    compileOnly(fileTree(dir: starmadeLibDir, include: "*.jar"))
 }
 
-compileJava.options.encoding = 'UTF-8'
+tasks.register('prepareStarmadeCompileDependencies', Exec) {
+    group = 'build setup'
+    description = 'Downloads and stages StarMade compile dependencies under .ci/starmade/StarMade/.'
+
+    commandLine 'bash', '.github/scripts/prepare_starmade.sh'
+    environment 'WORK_ROOT', layout.projectDirectory.dir('.ci/starmade').asFile.absolutePath
+
+    def starmadeBuildUrl = (project.findProperty('starmade_build_url') ?: '').toString().trim()
+    if (!starmadeBuildUrl.isEmpty()) {
+        environment 'STARMADE_BUILD_URL', starmadeBuildUrl
+    }
+
+    outputs.file(layout.projectDirectory.file('.ci/starmade/StarMade/StarMade.jar'))
+    outputs.dir(layout.projectDirectory.dir('.ci/starmade/StarMade/lib'))
+}
+
+tasks.withType(JavaCompile).configureEach {
+    if (useAutoPreparedStarmadeRoot && (!starmadeJar.exists() || !starmadeLibDir.exists())) {
+        dependsOn(tasks.named('prepareStarmadeCompileDependencies'))
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
 
 tasks.register("updateVersion") {
     doLast {
@@ -43,12 +74,15 @@ jar {
     dependsOn("updateVersion")
     duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
     destinationDirectory.set(file(starmadeDirectory + "mods"))
-    archiveFileName = modName + 'v' + getVersion() +  '.jar'
+    archiveFileName = modName + 'v' + getVersion() + '.jar'
     manifest.attributes('Main-Class': mainClassName)
     from {
         configurations.runtimeClasspath.collect {
-            if(!it.getPath().contains("StarMade") && it.getName().endsWith(".jar")) it.isDirectory() ? it : zipTree(it)
-            else return null;
+            if (!it.getPath().contains("StarMade") && it.getName().endsWith(".jar")) {
+                it.isDirectory() ? it : zipTree(it)
+            } else {
+                return null
+            }
         }
     }
 }
