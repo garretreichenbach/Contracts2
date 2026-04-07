@@ -10,7 +10,6 @@ import videogoose.contracts.data.contract.ContractDataManager;
 import videogoose.contracts.manager.ConfigManager;
 import videogoose.contracts.manager.EventManager;
 import videogoose.contracts.manager.GUIManager;
-import videogoose.contracts.manager.TestManager;
 import videogoose.contracts.networking.SendDataPacket;
 import videogoose.contracts.networking.SyncRequestPacket;
 
@@ -32,7 +31,6 @@ public class Contracts extends StarMod {
         registerCommands();
         registerPackets();
         if(ConfigManager.isDebugMode()) {
-            TestManager.initialize();
             logInfo("Debug mode enabled");
         }
     }

@@ -13,10 +13,9 @@ import org.schema.schine.input.InputState;
 import videogoose.contracts.data.DataManager;
 import videogoose.contracts.data.contract.ContractData;
 import videogoose.contracts.data.contract.ContractDataManager;
-import videogoose.contracts.data.player.PlayerData;
-import videogoose.contracts.data.player.PlayerDataManager;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Locale;
 import java.util.Set;
 
@@ -33,8 +32,8 @@ public class ContractsScrollableList extends ScrollableTableList<ContractData> i
 
 	@Override
 	public void initColumns() {
-		addColumn("Task", 30.0f, (o1, o2) -> o1.getName().compareTo(o2.getName()));
-		addColumn("Type", 5.0F, (o1, o2) -> o1.getContractType().compareTo(o2.getContractType()));
+		addColumn("Task", 30.0f, Comparator.comparing(ContractData::getName));
+		addColumn("Type", 5.0F, Comparator.comparing(ContractData::getContractType));
 		addColumn("Contractor", 7.0F, (o1, o2) -> {
 			String faction1 = GameCommon.getGameState().getFactionManager().getFactionName(o1.getContractor().getIdFaction());
 			String faction2 = GameCommon.getGameState().getFactionManager().getFactionName(o2.getContractor().getIdFaction());
@@ -89,8 +88,7 @@ public class ContractsScrollableList extends ScrollableTableList<ContractData> i
 
 	public GUIHorizontalButtonTablePane redrawButtonPane(final ContractData contract, GUIAncor anchor) {
 		GUIHorizontalButtonTablePane buttonPane;
-		final ContractDataManager dataManager = ContractDataManager.getInstance(false);
-		final PlayerData playerData = PlayerDataManager.getInstance(false).getClientOwnData();
+		ContractDataManager dataManager = ContractDataManager.getInstance(false);
 		if(player.getFactionId() == contract.getContractor().getIdFaction()) {
 			buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, anchor);
 			buttonPane.onInit();
@@ -142,138 +140,6 @@ public class ContractsScrollableList extends ScrollableTableList<ContractData> i
 		} else {
 			buttonPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, anchor);
 			buttonPane.onInit();
-			/*if(contract.canClaim(player)) {
-				buttonPane.addButton(0, 0, "CLAIM CONTRACT", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
-					@Override
-					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-						if(mouseEvent.pressedLeftMouse()) {
-							PlayerData playerData = PlayerDataManager.getInstance(false).getClientOwnData();
-							if(contract.canClaim(player)) {
-								if(playerData.getContracts().size() >= ConfigManager.getMainConfig().getInt("client-max-active-contracts")) {
-									getState().getController().popupAlertTextMessage("You have too many active contracts!");
-									getState().getController().queueUIAudio("0022_menu_ui - error 1");
-									return;
-								}
-								getState().getController().queueUIAudio("0022_action - buttons push small");
-								if(contract instanceof ActiveContractInterface && !((ActiveContractInterface) contract).canStart(playerData, contract)) {
-									getState().getController().popupAlertTextMessage("You must be in the correct sector to start this contract!");
-									return;
-								}
-								dataManager.sendPacket(contract, DataManager.UPDATE_DATA, true);
-							} else {
-								getState().getController().queueUIAudio("0022_menu_ui - error 1");
-								getState().getController().popupAlertTextMessage("You cannot claim this contract as you don't meet the requirements!");
-							}
-						}
-					}
-
-					@Override
-					public boolean isOccluded() {
-						return !contract.canClaim(player);
-					}
-				}, new GUIActivationCallback() {
-					@Override
-					public boolean isVisible(InputState inputState) {
-						return true;
-					}
-
-					@Override
-					public boolean isActive(InputState inputState) {
-						return contract.canClaim(player);
-					}
-				});
-
-				buttonPane.addButton(1, 0, "COMPLETE CONTRACT", GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
-					@Override
-					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-						if(mouseEvent.pressedLeftMouse()) {
-							if(contract.canComplete(player, false)) {
-								getState().getController().queueUIAudio("0022_menu_ui - enter");
-								dataManager.completeContract(playerData, contract);
-//								ClientActionType.COMPLETE_CONTRACT.send(contract.getUID());
-//								ClientDataManager.removeClientData(contract.getUID());
-								flagDirty();
-							} else {
-								SimplePopup popup = new SimplePopup(getState(), "Cannot Complete Contract", "You can't complete this contract!");
-								popup.activate();
-							}
-						}
-					}
-
-					@Override
-					public boolean isOccluded() {
-						return !contract.canComplete(player);
-					}
-				}, new GUIActivationCallback() {
-					@Override
-					public boolean isVisible(InputState inputState) {
-						return true;
-					}
-
-					@Override
-					public boolean isActive(InputState inputState) {
-						return contract.canComplete(player);
-					}
-				});
-			} else if(contract.getClaimants().containsKey(player.getName())) {
-				buttonPane.addButton(0, 0, "CANCEL CLAIM", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
-					@Override
-					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-						if(mouseEvent.pressedLeftMouse()) {
-							getState().getController().queueUIAudio("0022_menu_ui - back");
-							contract.getClaimants().remove(player.getName());
-							dataManager.sendPacket(contract, DataManager.UPDATE_DATA, true);
-							flagDirty();
-						}
-					}
-
-					@Override
-					public boolean isOccluded() {
-						return false;
-					}
-				}, new GUIActivationCallback() {
-					@Override
-					public boolean isVisible(InputState inputState) {
-						return true;
-					}
-
-					@Override
-					public boolean isActive(InputState inputState) {
-						return true;
-					}
-				});
-
-				buttonPane.addButton(1, 0, "COMPLETE CONTRACT", GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
-					@Override
-					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-						if(mouseEvent.pressedLeftMouse()) {
-							if(contract.canComplete(player)) {
-								getState().getController().queueUIAudio("0022_menu_ui - enter");
-								ContractDataManager.completeContract(playerData, contract);
-								flagDirty();
-							} else {
-								SimplePopup popup = new SimplePopup(getState(), "Cannot Complete Contract", "You can't complete this contract!");
-								popup.activate();
-							}
-						}
-					}
-
-					@Override
-					public boolean isOccluded() {
-						return !contract.canComplete(player);
-					}
-				}, new GUIActivationCallback() {
-					@Override
-					public boolean isVisible(InputState inputState) {
-						return true;
-					}
-
-					@Override
-					public boolean isActive(InputState inputState) {
-						return contract.canComplete(player);
-					}
-				});
-			}*/
 		}
 		return buttonPane;
 	}

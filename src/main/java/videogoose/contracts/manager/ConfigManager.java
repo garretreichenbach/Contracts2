@@ -3,7 +3,6 @@ package videogoose.contracts.manager;
 import api.utils.simpleconfig.SimpleConfigBool;
 import api.utils.simpleconfig.SimpleConfigContainer;
 import api.utils.simpleconfig.SimpleConfigInt;
-import api.utils.simpleconfig.SimpleConfigLong;
 import videogoose.contracts.Contracts;
 
 public final class ConfigManager {
@@ -13,11 +12,11 @@ public final class ConfigManager {
     private static SimpleConfigBool debugMode;
     private static SimpleConfigBool autoGenerateContracts;
     private static SimpleConfigInt maxAutoGenerateContracts;
-    private static SimpleConfigLong autoGenerateContractCheckTimer;
-    private static SimpleConfigLong contractTimerMax;
-    private static SimpleConfigLong contractTimeoutTimer;
+    private static SimpleConfigInt autoGenerateContractCheckTimer;
+    private static SimpleConfigInt contractTimerMax;
+    private static SimpleConfigInt contractTimeoutTimer;
     private static SimpleConfigInt clientMaxActiveContracts;
-    private static SimpleConfigLong blueprintUpdateInterval;
+    private static SimpleConfigInt blueprintUpdateInterval;
     private static SimpleConfigInt maxBountyMobCount;
     private static SimpleConfigInt maxBountyMobCombinedMass;
 
@@ -26,16 +25,16 @@ public final class ConfigManager {
     public static void initialize(Contracts instance) {
         config = new SimpleConfigContainer(instance, "config", false);
 
-        debugMode                    = new SimpleConfigBool(config,  "debug_mode",                        false,   "If true, enables debug logging and test commands.");
-        autoGenerateContracts        = new SimpleConfigBool(config,  "auto_generate_contracts",            true,    "If true, the server will periodically generate random contracts.");
-        maxAutoGenerateContracts     = new SimpleConfigInt(config,   "max_auto_generate_contracts",        10,      "Maximum number of auto-generated contracts allowed at once.");
-        autoGenerateContractCheckTimer = new SimpleConfigLong(config,"auto_generate_contract_check_timer", 3000L,   "Interval in milliseconds between auto-generation checks.");
-        contractTimerMax             = new SimpleConfigLong(config,  "contract_timer_max",                 3600000L,"Maximum contract duration in milliseconds.");
-        contractTimeoutTimer         = new SimpleConfigLong(config,  "contract_timeout_timer",             900000L, "Time in milliseconds before an unclaimed contract expires.");
-        clientMaxActiveContracts     = new SimpleConfigInt(config,   "client_max_active_contracts",        5,       "Maximum number of contracts a single player can hold at once.");
-        blueprintUpdateInterval      = new SimpleConfigLong(config,  "blueprint_update_interval",          300000L, "Interval in milliseconds between blueprint cache refreshes.");
-        maxBountyMobCount            = new SimpleConfigInt(config,   "max_bounty_mob_count",               12,      "Maximum number of mobs in a single bounty contract.");
-        maxBountyMobCombinedMass     = new SimpleConfigInt(config,   "max_bounty_mob_combined_mass",       350000,  "Maximum combined mass of mobs in a single bounty contract.");
+        debugMode                      = new SimpleConfigBool(config, "debug_mode",                         false,   "If true, enables debug logging.");
+        autoGenerateContracts          = new SimpleConfigBool(config, "auto_generate_contracts",             true,    "If true, the server will periodically generate random contracts.");
+        maxAutoGenerateContracts       = new SimpleConfigInt(config,  "max_auto_generate_contracts",         10,      "Maximum number of auto-generated contracts allowed at once.");
+        autoGenerateContractCheckTimer = new SimpleConfigInt(config,  "auto_generate_contract_check_timer",  3000,    "Interval in milliseconds between auto-generation checks.");
+        contractTimerMax               = new SimpleConfigInt(config,  "contract_timer_max",                  3600000, "Maximum contract duration in milliseconds.");
+        contractTimeoutTimer           = new SimpleConfigInt(config,  "contract_timeout_timer",              900000,  "Time in milliseconds before an unclaimed contract expires.");
+        clientMaxActiveContracts       = new SimpleConfigInt(config,  "client_max_active_contracts",         5,       "Maximum number of contracts a single player can hold at once.");
+        blueprintUpdateInterval        = new SimpleConfigInt(config,  "blueprint_update_interval",           300000,  "Interval in milliseconds between blueprint cache refreshes.");
+        maxBountyMobCount              = new SimpleConfigInt(config,  "max_bounty_mob_count",                12,      "Maximum number of mobs in a single bounty contract.");
+        maxBountyMobCombinedMass       = new SimpleConfigInt(config,  "max_bounty_mob_combined_mass",        350000,  "Maximum combined mass of mobs in a single bounty contract.");
 
         config.readWriteFields();
 
@@ -61,15 +60,15 @@ public final class ConfigManager {
     }
 
     public static long getAutoGenerateContractCheckTimer() {
-        return clampLong(longOrDefault(autoGenerateContractCheckTimer, 3000L), 1000L, 60000L);
+        return clampInt(intOrDefault(autoGenerateContractCheckTimer, 3000), 1000, 60000);
     }
 
     public static long getContractTimerMax() {
-        return clampLong(longOrDefault(contractTimerMax, 3600000L), 60000L, 86400000L);
+        return clampInt(intOrDefault(contractTimerMax, 3600000), 60000, 86400000);
     }
 
     public static long getContractTimeoutTimer() {
-        return clampLong(longOrDefault(contractTimeoutTimer, 900000L), 60000L, 86400000L);
+        return clampInt(intOrDefault(contractTimeoutTimer, 900000), 60000, 86400000);
     }
 
     public static int getClientMaxActiveContracts() {
@@ -77,7 +76,7 @@ public final class ConfigManager {
     }
 
     public static long getBlueprintUpdateInterval() {
-        return clampLong(longOrDefault(blueprintUpdateInterval, 300000L), 10000L, 3600000L);
+        return clampInt(intOrDefault(blueprintUpdateInterval, 300000), 10000, 3600000);
     }
 
     public static int getMaxBountyMobCount() {
@@ -98,15 +97,7 @@ public final class ConfigManager {
         return (entry == null || entry.getValue() == null) ? def : entry.getValue();
     }
 
-    private static long longOrDefault(SimpleConfigLong entry, long def) {
-        return (entry == null || entry.getValue() == null) ? def : entry.getValue();
-    }
-
     private static int clampInt(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
-    }
-
-    private static long clampLong(long value, long min, long max) {
         return Math.max(min, Math.min(max, value));
     }
 }

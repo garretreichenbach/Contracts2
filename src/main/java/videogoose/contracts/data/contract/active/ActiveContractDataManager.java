@@ -6,14 +6,13 @@ import videogoose.contracts.data.DataManager;
 import videogoose.contracts.data.SerializableData;
 import videogoose.contracts.data.contract.ContractData;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class ActiveContractDataManager extends DataManager<ActiveContractData> {
 
-	private final Set<ActiveContractData> clientCache = new HashSet<>();
+	private final Set<ActiveContractData> clientCache = ConcurrentHashMap.newKeySet();
 	private static ActiveContractDataManager instance;
 
 	public static ActiveContractDataManager getInstance(boolean server) {
@@ -26,10 +25,8 @@ public class ActiveContractDataManager extends DataManager<ActiveContractData> {
 
 	@Override
 	public Set<ActiveContractData> getServerCache() {
-		List<Object> objects = PersistentObjectUtil.getObjects(Contracts.getInstance().getSkeleton(), ActiveContractData.class);
-		Set<ActiveContractData> data = new HashSet<>();
-		for(Object object : objects) data.add((ActiveContractData) object);
-		return data;
+		return PersistentObjectUtil.getObjects(Contracts.getInstance().getSkeleton(), ActiveContractData.class)
+				.stream().map(o -> (ActiveContractData) o).collect(Collectors.toSet());
 	}
 
 	@Override

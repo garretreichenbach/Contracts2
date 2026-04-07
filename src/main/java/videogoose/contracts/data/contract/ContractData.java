@@ -4,11 +4,15 @@ import api.common.GameCommon;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.json.JSONObject;
+import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.Faction;
 import videogoose.contracts.data.SerializableData;
+import videogoose.contracts.manager.ConfigManager;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public abstract class ContractData extends SerializableData {
@@ -18,6 +22,7 @@ public abstract class ContractData extends SerializableData {
 	protected String name;
 	protected int contractorID;
 	protected long reward;
+	protected HashMap<String, Long> claimants = new HashMap<>();
 
 	protected ContractData(ContractType type, int contractorID, String name, long reward) {
 		super(DataType.CONTRACT_DATA);
@@ -56,6 +61,11 @@ public abstract class ContractData extends SerializableData {
 		data.put("name", name);
 		data.put("contractor_id", contractorID);
 		data.put("reward", reward);
+		JSONObject claimantsJson = new JSONObject();
+		for(Map.Entry<String, Long> entry : claimants.entrySet()) {
+			claimantsJson.put(entry.getKey(), entry.getValue());
+		}
+		data.put("claimants", claimantsJson);
 		return data;
 	}
 
@@ -72,6 +82,14 @@ public abstract class ContractData extends SerializableData {
 		name = data.getString("name");
 		contractorID = data.getInt("contractor_id");
 		reward = data.getLong("reward");
+		claimants = new HashMap<>();
+		if(data.has("claimants")) {
+			JSONObject claimantsJson = data.getJSONObject("claimants");
+			for(Object keyObj : claimantsJson.keySet()) {
+				String key = (String) keyObj;
+				claimants.put(key, claimantsJson.getLong(key));
+			}
+		}
 	}
 
 	@Override
@@ -82,6 +100,11 @@ public abstract class ContractData extends SerializableData {
 		writeBuffer.writeString(name);
 		writeBuffer.writeInt(contractorID);
 		writeBuffer.writeLong(reward);
+		writeBuffer.writeInt(claimants.size());
+		for(Map.Entry<String, Long> entry : claimants.entrySet()) {
+			writeBuffer.writeString(entry.getKey());
+			writeBuffer.writeLong(entry.getValue());
+		}
 	}
 
 	@Override
@@ -94,6 +117,13 @@ public abstract class ContractData extends SerializableData {
 		name = readBuffer.readString();
 		contractorID = readBuffer.readInt();
 		reward = readBuffer.readLong();
+		int claimantCount = readBuffer.readInt();
+		claimants = new HashMap<>(claimantCount);
+		for(int i = 0; i < claimantCount; i++) {
+			String playerName = readBuffer.readString();
+			long timestamp = readBuffer.readLong();
+			claimants.put(playerName, timestamp);
+		}
 	}
 
 	public String getName() {
@@ -117,7 +147,21 @@ public abstract class ContractData extends SerializableData {
 		return reward;
 	}
 
+	public HashMap<String, Long> getClaimants() {
+		return claimants;
+	}
+
+	public long getTimeRemaining(String playerName) {
+		if(!claimants.containsKey(playerName)) return 0;
+		long elapsed = System.currentTimeMillis() - claimants.get(playerName);
+		return Math.max(0, ConfigManager.getContractTimeoutTimer() - elapsed);
+	}
+
 	public abstract ContractType getContractType();
+
+	public abstract boolean canComplete(PlayerState player);
+
+	public abstract void onCompletion(PlayerState player);
 
 	public enum ContractType {
 		ALL("All"),

@@ -2,6 +2,7 @@ package videogoose.contracts.data.contract;
 
 import api.network.PacketReadBuffer;
 import org.json.JSONObject;
+import org.schema.game.common.data.player.PlayerState;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import videogoose.contracts.Contracts;
@@ -21,6 +22,7 @@ public class BountyContract extends ContractData {
 	public static final int MOB = 1;
 
 	private JSONObject targetData;
+	private boolean killedTarget = false;
 
 	protected BountyContract(int contractorID, String name, JSONObject targetData) {
 		super(ContractType.BOUNTY, contractorID, name, targetData.getLong("reward"));
@@ -105,10 +107,38 @@ public class BountyContract extends ContractData {
 		return targetData;
 	}
 
+	public int getBountyType() {
+		return targetData != null ? targetData.optInt("target_type", MOB) : MOB;
+	}
+
+	public JSONObject getTargetData() {
+		return targetData;
+	}
+
+	public void setKilledTarget(boolean server, boolean value) {
+		killedTarget = value;
+		ContractDataManager.getInstance(server).updateData(this, server);
+	}
+
+	public boolean isKilledTarget() {
+		return killedTarget;
+	}
+
+	@Override
+	public boolean canComplete(PlayerState player) {
+		return claimants.containsKey(player.getName()) && killedTarget;
+	}
+
+	@Override
+	public void onCompletion(PlayerState player) {
+		player.setCredits(player.getCredits() + reward);
+	}
+
 	@Override
 	public JSONObject serialize() {
 		JSONObject json = super.serialize();
 		json.put("target", targetData);
+		json.put("killed_target", killedTarget);
 		return json;
 	}
 
@@ -116,6 +146,7 @@ public class BountyContract extends ContractData {
 	public void deserialize(JSONObject data) {
 		super.deserialize(data);
 		targetData = data.getJSONObject("target");
+		killedTarget = data.optBoolean("killed_target", false);
 	}
 
 	@Override

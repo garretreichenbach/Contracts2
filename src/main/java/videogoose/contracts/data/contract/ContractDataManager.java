@@ -3,12 +3,14 @@ package videogoose.contracts.data.contract;
 import api.mod.config.PersistentObjectUtil;
 import org.schema.game.common.data.element.ElementInformation;
 import org.schema.game.common.data.element.ElementKeyMap;
+import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.FactionManager;
 import videogoose.contracts.Contracts;
 import videogoose.contracts.data.DataManager;
 import videogoose.contracts.data.SerializableData;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static videogoose.contracts.gui.contract.newcontract.NewContractPanel.getProductionFilter;
@@ -16,7 +18,7 @@ import static videogoose.contracts.gui.contract.newcontract.NewContractPanel.get
 public class ContractDataManager extends DataManager<ContractData> {
 
 	private static ContractDataManager instance;
-	private final Set<ContractData> clientCache = new HashSet<>();
+	private final Set<ContractData> clientCache = ConcurrentHashMap.newKeySet();
 
 	public static ContractDataManager getInstance(boolean server) {
 		if(instance == null) {
@@ -98,6 +100,18 @@ public class ContractDataManager extends DataManager<ContractData> {
 		if(randomContract != null) {
 			addData(randomContract, true);
 		}
+	}
+
+	public static void completeContract(videogoose.contracts.data.player.PlayerData playerData, ContractData contract) {
+		org.schema.game.common.data.player.PlayerState player = playerData.getPlayerState();
+		if(player == null || !contract.canComplete(player)) return;
+		contract.onCompletion(player);
+		playerData.removeContract(contract.getUUID());
+		ContractDataManager.getInstance(player.isOnServer()).removeData(contract, player.isOnServer());
+	}
+
+	public boolean canCompleteAny(PlayerState player) {
+		return getClientCache().stream().anyMatch(contract -> contract.canComplete(player));
 	}
 
 	public List<? extends ContractData> getContractsOfType(Class<? extends ContractData> contractType, boolean isServer) {
