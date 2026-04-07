@@ -16,6 +16,7 @@ import videogoose.contracts.networking.SyncRequestPacket;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 
 /**
  * [Description]
@@ -40,9 +41,8 @@ public abstract class DataManager<E extends SerializableData> {
 	}
 
 	public void sendDataToAllPlayers(SerializableData data, int type) {
-		for(PlayerState player : GameServer.getServerState().getPlayerStatesByName().values()) {
-			sendDataToPlayer(player, data, type);
-		}
+		GameServer.getServerState().getPlayerStatesByName().values()
+				.forEach(player -> sendDataToPlayer(player, data, type));
 	}
 
 	public void sendDataToPlayer(PlayerState player, SerializableData data, int type) {
