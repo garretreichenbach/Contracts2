@@ -9,10 +9,8 @@ import videogoose.contracts.Contracts;
 import videogoose.contracts.data.DataManager;
 import videogoose.contracts.data.SerializableData;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class PlayerDataManager extends DataManager<PlayerData> {
 
@@ -29,10 +27,8 @@ public class PlayerDataManager extends DataManager<PlayerData> {
 
 	@Override
 	public Set<PlayerData> getServerCache() {
-		List<Object> objects = PersistentObjectUtil.getObjects(Contracts.getInstance().getSkeleton(), PlayerData.class);
-		Set<PlayerData> data = new HashSet<>();
-		for(Object object : objects) data.add((PlayerData) object);
-		return data;
+		return PersistentObjectUtil.getObjects(Contracts.getInstance().getSkeleton(), PlayerData.class)
+				.stream().map(o -> (PlayerData) o).collect(Collectors.toSet());
 	}
 
 	@Override
@@ -76,10 +72,9 @@ public class PlayerDataManager extends DataManager<PlayerData> {
 	}
 
 	public PlayerData getFromName(String name, boolean server) {
-		for(PlayerData data : (server ? getServerCache() : getClientCache())) {
-			if(data.getName().equals(name)) return data;
-		}
-		return null;
+		return (server ? getServerCache() : getClientCache()).stream()
+				.filter(data -> data.getName().equals(name))
+				.findFirst().orElse(null);
 	}
 
 	public Set<PlayerData> getFactionMembers(Faction faction) {
@@ -87,11 +82,9 @@ public class PlayerDataManager extends DataManager<PlayerData> {
 	}
 
 	public Set<PlayerData> getFactionMembers(int factionId) {
-		Set<PlayerData> members = new HashSet<>();
-		for(PlayerData data : getServerCache()) {
-			if(data.getFactionID() == factionId) members.add(data);
-		}
-		return members;
+		return getServerCache().stream()
+				.filter(data -> data.getFactionID() == factionId)
+				.collect(Collectors.toSet());
 	}
 
 	public PlayerData getClientOwnData() {

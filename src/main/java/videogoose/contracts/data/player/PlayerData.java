@@ -30,6 +30,10 @@ public class PlayerData extends SerializableData {
 		deserialize(json);
 	}
 
+	public PlayerData(PacketReadBuffer packetReadBuffer) throws IOException {
+		deserializeNetwork(packetReadBuffer);
+	}
+
 	public void sendMail(String from, String title, String contents) {
 		GameCommon.getPlayerFromName(name).getClientChannel().getPlayerMessageController().serverSend(from, name, title, contents);
 	}

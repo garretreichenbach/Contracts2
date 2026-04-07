@@ -8,6 +8,9 @@ import videogoose.contracts.Contracts;
 import videogoose.contracts.data.SerializableData;
 import videogoose.contracts.data.contract.ContractData;
 import videogoose.contracts.data.contract.ContractDataManager;
+import videogoose.contracts.data.contract.active.ActiveContractData;
+import videogoose.contracts.data.contract.active.ActiveContractDataManager;
+import videogoose.contracts.data.player.PlayerData;
 import videogoose.contracts.data.player.PlayerDataManager;
 
 import java.io.IOException;
@@ -28,25 +31,29 @@ public class SendDataPacket extends Packet {
 	}
 
 	@Override
-	public void readPacketData(PacketReadBuffer packetReadBuffer) {
-		try {
-			type = packetReadBuffer.readInt();
-			dataType = SerializableData.DataType.valueOf(packetReadBuffer.readString());
-			if(dataType == SerializableData.DataType.CONTRACT_DATA) {
-				data = ContractData.readContract(packetReadBuffer);
-			} else {
-				data = dataType.getDataClass().getDeclaredConstructor(PacketReadBuffer.class).newInstance(packetReadBuffer);
-			}
-		} catch(Exception exception) {
-			Contracts.getInstance().logException("An error occurred while reading data packet", exception);
+	public void readPacketData(PacketReadBuffer buf) throws IOException {
+		type = buf.readInt();
+		dataType = SerializableData.DataType.valueOf(buf.readString());
+		switch(dataType) {
+			case PLAYER_DATA:
+				data = new PlayerData(buf);
+				break;
+			case CONTRACT_DATA:
+				data = ContractData.readContract(buf);
+				break;
+			case ACTIVE_CONTRACT_DATA:
+				data = new ActiveContractData(buf);
+				break;
+			default:
+				throw new IOException("Unknown DataType: " + dataType);
 		}
 	}
 
 	@Override
-	public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
-		packetWriteBuffer.writeInt(type);
-		packetWriteBuffer.writeString(dataType.name());
-		data.serializeNetwork(packetWriteBuffer);
+	public void writePacketData(PacketWriteBuffer buf) throws IOException {
+		buf.writeInt(type);
+		buf.writeString(dataType.name());
+		data.serializeNetwork(buf);
 	}
 
 	@Override
@@ -58,22 +65,29 @@ public class SendDataPacket extends Packet {
 			case CONTRACT_DATA:
 				ContractDataManager.getInstance(false).handlePacket(data, type, false);
 				break;
+			case ACTIVE_CONTRACT_DATA:
+				ActiveContractDataManager.getInstance(false).handlePacket(data, type, false);
+				break;
 			default:
-				throw new IllegalStateException("Unexpected value: " + dataType);
+				Contracts.getInstance().logWarning("SendDataPacket: unhandled DataType on client: " + dataType);
 		}
 	}
 
 	@Override
 	public void processPacketOnServer(PlayerState playerState) {
+		boolean server = playerState.isOnServer();
 		switch(dataType) {
 			case PLAYER_DATA:
-				PlayerDataManager.getInstance(playerState.isOnServer()).handlePacket(data, type, playerState.isOnServer());
+				PlayerDataManager.getInstance(server).handlePacket(data, type, server);
 				break;
 			case CONTRACT_DATA:
-				ContractDataManager.getInstance(playerState.isOnServer()).handlePacket(data, type, playerState.isOnServer());
+				ContractDataManager.getInstance(server).handlePacket(data, type, server);
+				break;
+			case ACTIVE_CONTRACT_DATA:
+				ActiveContractDataManager.getInstance(server).handlePacket(data, type, server);
 				break;
 			default:
-				throw new IllegalStateException("Unexpected value: " + dataType);
+				Contracts.getInstance().logWarning("SendDataPacket: unhandled DataType on server: " + dataType);
 		}
 	}
 }

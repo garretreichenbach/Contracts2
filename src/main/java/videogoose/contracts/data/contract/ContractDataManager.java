@@ -9,6 +9,7 @@ import videogoose.contracts.data.DataManager;
 import videogoose.contracts.data.SerializableData;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static videogoose.contracts.gui.contract.newcontract.NewContractPanel.getProductionFilter;
 
@@ -99,13 +100,9 @@ public class ContractDataManager extends DataManager<ContractData> {
 		}
 	}
 
-	public ArrayList<? extends ContractData> getContractsOfType(Class<? extends ContractData> contractType, boolean isServer) {
-		ArrayList<ContractData> contracts = new ArrayList<>();
-		for(ContractData contract : getCache(isServer)) {
-			if(contractType.isInstance(contract)) {
-				contracts.add(contract);
-			}
-		}
-		return contracts;
+	public List<? extends ContractData> getContractsOfType(Class<? extends ContractData> contractType, boolean isServer) {
+		return getCache(isServer).stream()
+				.filter(contractType::isInstance)
+				.collect(Collectors.toList());
 	}
 }

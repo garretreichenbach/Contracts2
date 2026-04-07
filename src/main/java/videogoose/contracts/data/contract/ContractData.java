@@ -8,6 +8,7 @@ import org.schema.game.common.data.player.faction.Faction;
 import videogoose.contracts.data.SerializableData;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Objects;
 
 public abstract class ContractData extends SerializableData {
@@ -130,12 +131,9 @@ public abstract class ContractData extends SerializableData {
 		}
 
 		public static ContractType fromString(String s) {
-			for(ContractType type : values()) {
-				if(s.trim().equalsIgnoreCase(type.displayName.trim())) {
-					return type;
-				}
-			}
-			return null;
+			return Arrays.stream(values())
+					.filter(type -> s.trim().equalsIgnoreCase(type.displayName.trim()))
+					.findFirst().orElse(null);
 		}
 
 		public static ContractType getRandomType() {

@@ -16,7 +16,6 @@ import videogoose.contracts.networking.SyncRequestPacket;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.stream.StreamSupport;
 
 /**
  * [Description]
@@ -30,11 +29,11 @@ public abstract class DataManager<E extends SerializableData> {
 	public static final int UPDATE_DATA = 2;
 
 	public static DataManager<?> getDataManager(Class<? extends DataManager<?>> dataManagerClass, boolean server) {
-		if(dataManagerClass.equals(PlayerData.class)) {
+		if(dataManagerClass.equals(PlayerDataManager.class)) {
 			return PlayerDataManager.getInstance(server);
-		} else if(dataManagerClass.equals(ContractData.class)) {
+		} else if(dataManagerClass.equals(ContractDataManager.class)) {
 			return ContractDataManager.getInstance(server);
-		} else if(dataManagerClass.equals(ActiveContractData.class)) {
+		} else if(dataManagerClass.equals(ActiveContractDataManager.class)) {
 			return ActiveContractDataManager.getInstance(server);
 		}
 		return null;
@@ -51,10 +50,7 @@ public abstract class DataManager<E extends SerializableData> {
 	}
 
 	public void sendAllDataToPlayer(PlayerState player) {
-		Collection<E> cache = getCache(true);
-		for(E data : cache) {
-			sendDataToPlayer(player, data, ADD_DATA);
-		}
+		getCache(true).forEach(data -> sendDataToPlayer(player, data, ADD_DATA));
 	}
 
 	public void requestFromServer() {
@@ -118,9 +114,9 @@ public abstract class DataManager<E extends SerializableData> {
 	}
 
 	public E getFromUUID(String uuid, boolean server) {
-		Collection<E> cache = getCache(server);
-		for(E data : cache) if(data.getUUID().equals(uuid)) return data;
-		return null;
+		return getCache(server).stream()
+				.filter(data -> data.getUUID().equals(uuid))
+				.findFirst().orElse(null);
 	}
 
 	public abstract Collection<E> getServerCache();
