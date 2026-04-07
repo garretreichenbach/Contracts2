@@ -60,8 +60,8 @@ public class BountyContract extends ContractData {
 			if(!spawnWeights.isEmpty()) {
 				ArrayList<BlueprintEntry> blueprints = new ArrayList<>(spawnWeights.keySet());
 				Random random = new Random();
-				int maxMobs = ConfigManager.getMainConfig().getInt("max-bounty-mob-count");
-				double maxMass = ConfigManager.getMainConfig().getDouble("max-bounty-mob-combined-mass");
+				int maxMobs = ConfigManager.getMaxBountyMobCount();
+				double maxMass = ConfigManager.getMaxBountyMobCombinedMass();
 				ArrayList<JSONObject> mobList = new ArrayList<>();
 				double totalMass = 0.0;
 				long reward = 0L;

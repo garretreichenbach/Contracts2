@@ -17,7 +17,6 @@ import videogoose.contracts.data.player.PlayerData;
 import videogoose.contracts.data.player.PlayerDataManager;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Locale;
 import java.util.Set;
 
@@ -34,31 +33,14 @@ public class ContractsScrollableList extends ScrollableTableList<ContractData> i
 
 	@Override
 	public void initColumns() {
-		addColumn("Task", 30.0f, new Comparator<ContractData>() {
-			public int compare(ContractData o1, ContractData o2) {
-				return o1.getName().compareTo(o2.getName());
-			}
+		addColumn("Task", 30.0f, (o1, o2) -> o1.getName().compareTo(o2.getName()));
+		addColumn("Type", 5.0F, (o1, o2) -> o1.getContractType().compareTo(o2.getContractType()));
+		addColumn("Contractor", 7.0F, (o1, o2) -> {
+			String faction1 = GameCommon.getGameState().getFactionManager().getFactionName(o1.getContractor().getIdFaction());
+			String faction2 = GameCommon.getGameState().getFactionManager().getFactionName(o2.getContractor().getIdFaction());
+			return faction1.compareTo(faction2);
 		});
-
-		addColumn("Type", 5.0F, new Comparator<ContractData>() {
-			public int compare(ContractData o1, ContractData o2) {
-				return o1.getContractType().compareTo(o2.getContractType());
-			}
-		});
-
-		addColumn("Contractor", 7.0F, new Comparator<ContractData>() {
-			public int compare(ContractData o1, ContractData o2) {
-				String faction1 = GameCommon.getGameState().getFactionManager().getFactionName(o1.getContractor().getIdFaction());
-				String faction2 = GameCommon.getGameState().getFactionManager().getFactionName(o2.getContractor().getIdFaction());
-				return faction1.compareTo(faction2);
-			}
-		});
-
-		addColumn("Reward", 7.5F, new Comparator<ContractData>() {
-			public int compare(ContractData o1, ContractData o2) {
-				return CompareTools.compare(o1.getReward(), o2.getReward());
-			}
-		});
+		addColumn("Reward", 7.5F, (o1, o2) -> CompareTools.compare(o1.getReward(), o2.getReward()));
 
 		addTextFilter(new GUIListFilterText<ContractData>() {
 			public boolean isOk(String s, ContractData contract) {

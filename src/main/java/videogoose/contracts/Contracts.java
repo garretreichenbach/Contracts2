@@ -31,7 +31,7 @@ public class Contracts extends StarMod {
         GUIManager.initialize();
         registerCommands();
         registerPackets();
-        if(ConfigManager.getMainConfig().getBoolean("debug-mode")) {
+        if(ConfigManager.isDebugMode()) {
             TestManager.initialize();
             logInfo("Debug mode enabled");
         }
@@ -39,20 +39,20 @@ public class Contracts extends StarMod {
 
     @Override
     public void onServerCreated(ServerInitializeEvent event) {
-        if(ConfigManager.getMainConfig().getBoolean("auto-generate-contracts")) {
-            (new StarRunnable() {
+        if(ConfigManager.isAutoGenerateContracts()) {
+            new StarRunnable() {
                 @Override
                 public void run() {
-                    ContractDataManager instance = ContractDataManager.getInstance(true);
-                    if(instance.getCache(true).size() < ConfigManager.getMainConfig().getInt("max-auto-generate-contracts")) {
+                    ContractDataManager mgr = ContractDataManager.getInstance(true);
+                    if(mgr.getCache(true).size() < ConfigManager.getMaxAutoGenerateContracts()) {
                         getInstance().logInfo("Generating random contract data...");
-                        instance.generateRandomContract();
+                        mgr.generateRandomContract();
                         getInstance().logInfo("Random contract data generated.");
                     } else {
                         getInstance().logInfo("Maximum number of auto-generated contracts reached. No new contracts will be generated.");
                     }
                 }
-            }).runTimer(this, ConfigManager.getMainConfig().getLong("auto-generate-contract-check-timer"));
+            }.runTimer(this, ConfigManager.getAutoGenerateContractCheckTimer());
         }
     }
 
@@ -61,7 +61,6 @@ public class Contracts extends StarMod {
         StarLoader.registerCommand(new PurgeContractsCommand());
         StarLoader.registerCommand(new CompleteContractsCommand());
         StarLoader.registerCommand(new ListContractsCommand());
-        StarLoader.registerCommand(new RunTestCommand());
     }
 
     private void registerPackets() {

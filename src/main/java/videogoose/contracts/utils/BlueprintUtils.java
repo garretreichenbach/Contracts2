@@ -41,7 +41,7 @@ public class BlueprintUtils {
 	private static long lastBPUpdateCheck;
 
 	private static void readBPs() {
-		if(blueprintMap.isEmpty() || lastBPUpdateCheck == 0 || System.currentTimeMillis() - lastBPUpdateCheck > ConfigManager.getMainConfig().getLong("blueprint-update-interval")) {
+		if(blueprintMap.isEmpty() || lastBPUpdateCheck == 0 || System.currentTimeMillis() - lastBPUpdateCheck > ConfigManager.getBlueprintUpdateInterval()) {
 			blueprintMap.clear();
 			try {
 				List<BlueprintEntry> allBlueprints = BluePrintController.active.readBluePrints();

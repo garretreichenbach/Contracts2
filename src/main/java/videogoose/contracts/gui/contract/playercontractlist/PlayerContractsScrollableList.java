@@ -19,7 +19,6 @@ import videogoose.contracts.manager.ConfigManager;
 import videogoose.contracts.manager.GUIManager;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Locale;
 import java.util.Set;
 
@@ -34,37 +33,17 @@ public class PlayerContractsScrollableList extends ScrollableTableList<ActiveCon
 
 	@Override
 	public void initColumns() {
-		addColumn("Task", 20.0F, new Comparator<ActiveContractData>() {
-			public int compare(ActiveContractData ActiveContractData, ActiveContractData o2) {
-				return o1.getName().compareTo(o2.getName());
-			}
+		addColumn("Task", 20.0F, (o1, o2) -> o1.getName().compareTo(o2.getName()));
+		addColumn("Type", 7.0F, (o1, o2) -> o1.getContractType().compareTo(o2.getContractType()));
+		addColumn("Contractor", 7.0F, (o1, o2) -> {
+			String name1 = GameCommon.getGameState().getFactionManager().getFactionName(o1.getContractor().getIdFaction());
+			String name2 = GameCommon.getGameState().getFactionManager().getFactionName(o2.getContractor().getIdFaction());
+			return name1.compareTo(name2);
 		});
-
-		addColumn("Type", 7.0F, new Comparator<ActiveContractData>() {
-			public int compare(ActiveContractData o1, ActiveContractData o2) {
-				return o1.getContractType().compareTo(o2.getContractType());
-			}
-		});
-
-		addColumn("Contractor", 7.0F, new Comparator<ContractData>() {
-			public int compare(ActiveContractData o1, ActiveContractData o2) {
-				String name1 = GameCommon.getGameState().getFactionManager().getFactionName(o1.getContractor().getIdFaction());
-				String name2 = GameCommon.getGameState().getFactionManager().getFactionName(o2.getContractor().getIdFaction());
-				return name1.compareTo(name2);
-			}
-		});
-
-		addColumn("Reward", 5.0F, new Comparator<ActiveContractData>() {
-			public int compare(ActiveContractData o1, ActiveContractData o2) {
-				return CompareTools.compare(o1.getReward(), o2.getReward());
-			}
-		});
-
-		addColumn("Time Remaining", 10.0F, new Comparator<ActiveContractData>() {
-			public int compare(ActiveContractData o1, ActiveContractData o2) {
-				return CompareTools.compare(o1.getTimeRemaining(GameClient.getClientPlayerState().getName()), o2.getTimeRemaining(GameClient.getClientPlayerState().getName()));
-			}
-		});
+		addColumn("Reward", 5.0F, (o1, o2) -> CompareTools.compare(o1.getReward(), o2.getReward()));
+		addColumn("Time Remaining", 10.0F, (o1, o2) -> CompareTools.compare(
+				o1.getTimeRemaining(GameClient.getClientPlayerState().getName()),
+				o2.getTimeRemaining(GameClient.getClientPlayerState().getName())));
 
 		addTextFilter(new GUIListFilterText<ContractData>() {
 			public boolean isOk(String s, ContractData contract) {
@@ -223,14 +202,14 @@ public class PlayerContractsScrollableList extends ScrollableTableList<ActiveCon
 					public void draw() {
 						long timeRemaining = contract.getTimeRemaining(GameClient.getClientPlayerState().getName());
 						if(timeRemaining == 0)
-							timeRemaining = ConfigManager.getMainConfig().getLong("contract-timer-max");
+							timeRemaining = ConfigManager.getContractTimerMax();
 						String timeRemainingString = StringTools.formatRaceTime(timeRemaining);
 						setTextSimple(timeRemainingString.substring(0, timeRemainingString.indexOf(".")));
 						updateCacheForced();
 						super.draw();
 					}
 				};
-				long timeRemaining = ConfigManager.getMainConfig().getLong("contract-timer-max");
+				long timeRemaining = ConfigManager.getContractTimerMax();
 				String timeRemainingString = StringTools.formatRaceTime(timeRemaining);
 				timeTextElement.setTextSimple(timeRemainingString.substring(0, timeRemainingString.indexOf(".")));
 
