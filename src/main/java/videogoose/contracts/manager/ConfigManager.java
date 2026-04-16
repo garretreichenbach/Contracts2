@@ -95,6 +95,23 @@ public final class ConfigManager {
         return clampInt(intOrDefault(maxBountyMobCombinedMass, 350000), 1000, 10000000);
     }
 
+    public static String getRewardType() {
+        return stringOrDefault(rewardType, "CREDITS").toUpperCase();
+    }
+
+    public static boolean isItemReward() {
+        return "ITEM".equals(getRewardType());
+    }
+
+    public static short getRewardItemId() {
+        return (short) intOrDefault(rewardItemId, -1);
+    }
+
+    public static double getRewardBaseMultiplier() {
+        double val = doubleOrDefault(rewardBaseMultiplier, 1.0);
+        return Math.max(0.01, val);
+    }
+
     // --- helpers ---
 
     private static boolean boolOrDefault(SimpleConfigBool entry, boolean def) {
@@ -102,6 +119,14 @@ public final class ConfigManager {
     }
 
     private static int intOrDefault(SimpleConfigInt entry, int def) {
+        return (entry == null || entry.getValue() == null) ? def : entry.getValue();
+    }
+
+    private static String stringOrDefault(SimpleConfigString entry, String def) {
+        return (entry == null || entry.getValue() == null) ? def : entry.getValue();
+    }
+
+    private static double doubleOrDefault(SimpleConfigDouble entry, double def) {
         return (entry == null || entry.getValue() == null) ? def : entry.getValue();
     }
 
