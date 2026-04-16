@@ -1,7 +1,9 @@
 package videogoose.contracts.manager;
 
 import api.common.GameClient;
+import api.common.GameCommon;
 import api.listener.Listener;
+import api.listener.events.entity.SegmentControllerOverheatEvent;
 import api.listener.events.gui.GUITopBarCreateEvent;
 import api.listener.events.gui.MainWindowTabAddEvent;
 import api.listener.events.player.PlayerDeathEvent;
@@ -12,6 +14,8 @@ import org.schema.game.client.view.gui.newgui.GUITopBar;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.controller.damage.Damager;
 import org.schema.game.common.data.player.PlayerState;
+import org.schema.game.common.data.player.faction.Faction;
+import org.schema.game.common.data.player.faction.FactionManager;
 import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
@@ -22,6 +26,7 @@ import org.schema.schine.network.server.ServerMessage;
 import videogoose.contracts.Contracts;
 import videogoose.contracts.data.DataManager;
 import videogoose.contracts.data.contract.BountyContract;
+import videogoose.contracts.data.contract.ContractData;
 import videogoose.contracts.data.contract.ContractDataManager;
 import videogoose.contracts.gui.contract.playercontractlist.PlayerContractsDialog;
 
@@ -61,6 +66,50 @@ public class EventManager {
 					mgr.sendPacket(bounty, DataManager.UPDATE_DATA, !event.getPlayer().isOnServer());
 					finalKiller.sendServerMessage(new ServerMessage(new String[]{Lng.str("You can now turn in the \"" + bounty.getName() + "\" contract!")}, ServerMessage.MESSAGE_TYPE_INFO));
 					return;
+				}
+			}
+		}, instance);
+
+		StarLoader.registerListener(SegmentControllerOverheatEvent.class, new Listener<SegmentControllerOverheatEvent>() {
+			@Override
+			public void onEvent(SegmentControllerOverheatEvent event) {
+				if(!event.isKilled()) return;
+				if(!ConfigManager.isAutoBountyEnabled()) return;
+				SegmentController victim = event.getEntity();
+				int victimFactionId = victim.getFactionId();
+				if(!FactionManager.isNPCFaction(victimFactionId)) return;
+				Damager damager = event.getLastDamager();
+				if(damager == null) return;
+				PlayerState killer = null;
+				if(damager instanceof PlayerState) {
+					killer = (PlayerState) damager;
+				} else if(damager instanceof SegmentController) {
+					SegmentController sc = (SegmentController) damager;
+					if(sc.isConrolledByActivePlayer()) {
+						killer = SegmentControllerUtils.getAttachedPlayers(sc).get(0);
+					} else {
+						sc = sc.railController.getRoot();
+						if(sc.isConrolledByActivePlayer()) killer = SegmentControllerUtils.getAttachedPlayers(sc).get(0);
+					}
+				}
+				if(killer == null) return;
+				int killCount = AggressionManager.getInstance().recordKill(killer.getName(), victimFactionId);
+				if(killCount >= ConfigManager.getAutoBountyKillThreshold()) {
+					AggressionManager.getInstance().resetKills(killer.getName(), victimFactionId);
+					int bountyCount = AggressionManager.getInstance().incrementBountyCount(killer.getName(), victimFactionId);
+					long escalatedReward = ConfigManager.getAutoBountyReward() * bountyCount;
+					ContractData.Difficulty difficulty = getEscalatedDifficulty(bountyCount);
+					JSONObject targetData = new JSONObject();
+					targetData.put("target_type", BountyContract.PLAYER);
+					targetData.put("player_name", killer.getName());
+					targetData.put("reward", escalatedReward);
+					Faction npcFaction = GameCommon.getGameState().getFactionManager().getFaction(victimFactionId);
+					String factionName = npcFaction != null ? npcFaction.getName() : "Unknown Faction";
+					String contractName = "[" + difficulty.displayName + "] " + factionName + " Bounty: Kill " + killer.getName();
+					BountyContract bounty = new BountyContract(victimFactionId, contractName, targetData, difficulty);
+					ContractDataManager.getInstance(true).addData(bounty, true);
+					Contracts.getInstance().logInfo("Auto-bounty #" + bountyCount + " placed on " + killer.getName() + " by " + factionName + " (reward: " + escalatedReward + ")");
+					killer.sendServerMessage(new ServerMessage(new String[]{factionName + " has placed a " + difficulty.displayName + " bounty on your head!"}, ServerMessage.MESSAGE_TYPE_WARNING));
 				}
 			}
 		}, instance);
@@ -108,5 +157,12 @@ public class EventManager {
 				GUIManager.getInstance().createContractsShopTab(event);
 			}
 		}, instance);
+	}
+
+	private static ContractData.Difficulty getEscalatedDifficulty(int bountyCount) {
+		if(bountyCount >= 4) return ContractData.Difficulty.EXTREME;
+		if(bountyCount >= 3) return ContractData.Difficulty.HARD;
+		if(bountyCount >= 2) return ContractData.Difficulty.NORMAL;
+		return ContractData.Difficulty.EASY;
 	}
 }

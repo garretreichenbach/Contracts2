@@ -24,6 +24,10 @@ public final class ConfigManager {
     private static SimpleConfigString rewardType;
     private static SimpleConfigInt rewardItemId;
     private static SimpleConfigDouble rewardBaseMultiplier;
+    private static SimpleConfigBool autoBountyEnabled;
+    private static SimpleConfigInt autoBountyKillThreshold;
+    private static SimpleConfigInt autoBountyReward;
+    private static SimpleConfigInt autoBountyDecayTimer;
 
     private ConfigManager() {}
 
@@ -43,6 +47,10 @@ public final class ConfigManager {
         rewardType                     = new SimpleConfigString(config, "reward_type",                        "CREDITS", "Reward type for contracts. CREDITS = pay credits, ITEM = pay items.");
         rewardItemId                   = new SimpleConfigInt(config,  "reward_item_id",                      -1,      "Block/item ID to use when reward_type is ITEM (e.g. gold bar ID).");
         rewardBaseMultiplier           = new SimpleConfigDouble(config, "reward_base_multiplier",             1.0,     "Base multiplier applied to all contract rewards before difficulty scaling.");
+        autoBountyEnabled              = new SimpleConfigBool(config, "auto_bounty_enabled",                 true,    "If true, NPC factions will automatically place bounties on aggressive players.");
+        autoBountyKillThreshold        = new SimpleConfigInt(config,  "auto_bounty_kill_threshold",           3,      "Number of NPC faction kills before that faction places an auto-bounty.");
+        autoBountyReward               = new SimpleConfigInt(config,  "auto_bounty_reward",                   5000000,  "Base credit reward for auto-generated NPC bounties.");
+        autoBountyDecayTimer           = new SimpleConfigInt(config,  "auto_bounty_decay_timer",              10800000, "Time in milliseconds before a player's aggression count decays by one.");
 
         config.readWriteFields();
 
@@ -93,6 +101,22 @@ public final class ConfigManager {
 
     public static int getMaxBountyMobCombinedMass() {
         return clampInt(intOrDefault(maxBountyMobCombinedMass, 350000), 1000, 10000000);
+    }
+
+    public static boolean isAutoBountyEnabled() {
+        return boolOrDefault(autoBountyEnabled, true);
+    }
+
+    public static int getAutoBountyKillThreshold() {
+        return clampInt(intOrDefault(autoBountyKillThreshold, 5), 1, 100);
+    }
+
+    public static long getAutoBountyReward() {
+        return intOrDefault(autoBountyReward, 50000);
+    }
+
+    public static long getAutoBountyDecayTimer() {
+        return clampInt(intOrDefault(autoBountyDecayTimer, 600000), 10000, 86400000);
     }
 
     public static String getRewardType() {

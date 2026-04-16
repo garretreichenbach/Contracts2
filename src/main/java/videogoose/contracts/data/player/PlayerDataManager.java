@@ -28,8 +28,7 @@ public class PlayerDataManager extends DataManager<PlayerData> {
 
 	@Override
 	public Set<PlayerData> getServerCache() {
-		return PersistentObjectUtil.getObjects(Contracts.getInstance().getSkeleton(), PlayerData.class)
-				.stream().map(o -> (PlayerData) o).collect(Collectors.toSet());
+		return PersistentObjectUtil.getObjects(Contracts.getInstance().getSkeleton(), PlayerData.class).stream().map(o -> (PlayerData) o).collect(Collectors.toSet());
 	}
 
 	@Override
@@ -73,9 +72,7 @@ public class PlayerDataManager extends DataManager<PlayerData> {
 	}
 
 	public PlayerData getFromName(String name, boolean server) {
-		return (server ? getServerCache() : getClientCache()).stream()
-				.filter(data -> data.getName().equals(name))
-				.findFirst().orElse(null);
+		return (server ? getServerCache() : getClientCache()).stream().filter(data -> data.getName().equals(name)).findFirst().orElse(null);
 	}
 
 	public Set<PlayerData> getFactionMembers(Faction faction) {
@@ -83,9 +80,7 @@ public class PlayerDataManager extends DataManager<PlayerData> {
 	}
 
 	public Set<PlayerData> getFactionMembers(int factionId) {
-		return getServerCache().stream()
-				.filter(data -> data.getFactionID() == factionId)
-				.collect(Collectors.toSet());
+		return getServerCache().stream().filter(data -> data.getFactionID() == factionId).collect(Collectors.toSet());
 	}
 
 	public PlayerData getClientOwnData() {
