@@ -50,6 +50,8 @@ public abstract class ContractData extends SerializableData {
 				return new BountyContract(packetReadBuffer);
 			case ITEMS:
 				return new ItemsContract(packetReadBuffer);
+			case ESCORT:
+				return new EscortContract(packetReadBuffer);
 			default:
 				return null;
 		}
@@ -185,7 +187,8 @@ public abstract class ContractData extends SerializableData {
 	public enum ContractType {
 		ALL("All"),
 		BOUNTY("Bounty"),
-		ITEMS("Items");
+		ITEMS("Items"),
+		ESCORT("Escort");
 
 		public final String displayName;
 

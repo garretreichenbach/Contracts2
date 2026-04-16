@@ -41,9 +41,7 @@ public class PlayerContractsScrollableList extends ScrollableTableList<ContractD
 			return name1.compareTo(name2);
 		});
 		addColumn("Reward", 5.0F, (o1, o2) -> CompareTools.compare(o1.getReward(), o2.getReward()));
-		addColumn("Time Remaining", 10.0F, (o1, o2) -> CompareTools.compare(
-				o1.getTimeRemaining(GameClient.getClientPlayerState().getName()),
-				o2.getTimeRemaining(GameClient.getClientPlayerState().getName())));
+		addColumn("Time Remaining", 10.0F, (o1, o2) -> CompareTools.compare(o1.getTimeRemaining(GameClient.getClientPlayerState().getName()), o2.getTimeRemaining(GameClient.getClientPlayerState().getName())));
 
 		addTextFilter(new GUIListFilterText<ContractData>() {
 			public boolean isOk(String s, ContractData contract) {
@@ -60,6 +58,8 @@ public class PlayerContractsScrollableList extends ScrollableTableList<ContractD
 						return contract.getContractType() == ContractData.ContractType.BOUNTY;
 					case ITEMS:
 						return contract.getContractType() == ContractData.ContractType.ITEMS;
+					case ESCORT:
+						return contract.getContractType() == ContractData.ContractType.ESCORT;
 				}
 				return true;
 			}
@@ -201,14 +201,14 @@ public class PlayerContractsScrollableList extends ScrollableTableList<ContractD
 						long timeRemaining = contract.getTimeRemaining(GameClient.getClientPlayerState().getName());
 						if(timeRemaining == 0) timeRemaining = ConfigManager.getContractTimerMax();
 						String formatted = StringTools.formatRaceTime(timeRemaining);
-						setTextSimple(formatted.substring(0, formatted.indexOf(".")));
+						setTextSimple(formatted.substring(0, formatted.indexOf('.')));
 						updateCacheForced();
 						super.draw();
 					}
 				};
 				long timeRemaining = ConfigManager.getContractTimerMax();
 				String formatted = StringTools.formatRaceTime(timeRemaining);
-				timeTextElement.setTextSimple(formatted.substring(0, formatted.indexOf(".")));
+				timeTextElement.setTextSimple(formatted.substring(0, formatted.indexOf('.')));
 
 				PlayerContractListRow row = new PlayerContractListRow(getState(), contract, nameRowElement, contractTypeRowElement, contractorRowElement, rewardRowElement, timeTextElement);
 				GUIAncor anchor = new GUIAncor(getState(), window.getWidth() - 107.0f, 28.0f) {

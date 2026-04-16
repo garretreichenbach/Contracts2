@@ -49,7 +49,9 @@ public class EventManager {
 						killer = SegmentControllerUtils.getAttachedPlayers(sc).get(0);
 					} else {
 						sc = sc.railController.getRoot();
-						if(sc.isConrolledByActivePlayer()) killer = SegmentControllerUtils.getAttachedPlayers(sc).get(0);
+						if(sc.isConrolledByActivePlayer()) {
+							killer = SegmentControllerUtils.getAttachedPlayers(sc).get(0);
+						}
 					}
 				}
 				if(killer == null) return;
@@ -61,7 +63,8 @@ public class EventManager {
 					JSONObject targetData = bounty.getTargetData();
 					if(!targetData.has("player_name")) continue;
 					if(!targetData.getString("player_name").equals(event.getPlayer().getName())) continue;
-					if(event.getPlayer().equals(finalKiller) && event.getPlayer().getFactionId() != finalKiller.getFactionId() && !finalKiller.isAdmin()) return;
+					if(event.getPlayer().equals(finalKiller) && event.getPlayer().getFactionId() != finalKiller.getFactionId() && !finalKiller.isAdmin())
+						return;
 					bounty.setKilledTarget(event.getPlayer().isOnServer(), true);
 					mgr.sendPacket(bounty, DataManager.UPDATE_DATA, !event.getPlayer().isOnServer());
 					finalKiller.sendServerMessage(new ServerMessage(new String[]{Lng.str("You can now turn in the \"" + bounty.getName() + "\" contract!")}, ServerMessage.MESSAGE_TYPE_INFO));
@@ -74,6 +77,8 @@ public class EventManager {
 			@Override
 			public void onEvent(SegmentControllerOverheatEvent event) {
 				if(!event.isKilled()) return;
+				// Escort cargo/defender destruction tracking
+				EscortManager.getInstance().onEntityDestroyed(event.getEntity());
 				if(!ConfigManager.isAutoBountyEnabled()) return;
 				SegmentController victim = event.getEntity();
 				int victimFactionId = victim.getFactionId();
@@ -89,7 +94,8 @@ public class EventManager {
 						killer = SegmentControllerUtils.getAttachedPlayers(sc).get(0);
 					} else {
 						sc = sc.railController.getRoot();
-						if(sc.isConrolledByActivePlayer()) killer = SegmentControllerUtils.getAttachedPlayers(sc).get(0);
+						if(sc.isConrolledByActivePlayer())
+							killer = SegmentControllerUtils.getAttachedPlayers(sc).get(0);
 					}
 				}
 				if(killer == null) return;

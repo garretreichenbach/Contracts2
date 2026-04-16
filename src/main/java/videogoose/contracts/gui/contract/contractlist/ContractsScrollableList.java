@@ -2,6 +2,7 @@ package videogoose.contracts.gui.contract.contractlist;
 
 import api.common.GameClient;
 import api.common.GameCommon;
+import api.network.packets.PacketUtil;
 import org.schema.common.util.CompareTools;
 import org.schema.game.client.controller.PlayerOkCancelInput;
 import org.schema.game.common.data.player.PlayerState;
@@ -13,6 +14,7 @@ import org.schema.schine.input.InputState;
 import videogoose.contracts.data.DataManager;
 import videogoose.contracts.data.contract.ContractData;
 import videogoose.contracts.data.contract.ContractDataManager;
+import videogoose.contracts.networking.AcceptContractPacket;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -56,6 +58,8 @@ public class ContractsScrollableList extends ScrollableTableList<ContractData> i
 						return contract.getContractType() == ContractData.ContractType.BOUNTY;
 					case ITEMS:
 						return contract.getContractType() == ContractData.ContractType.ITEMS;
+					case ESCORT:
+						return contract.getContractType() == ContractData.ContractType.ESCORT;
 				}
 				return true;
 			}
@@ -86,7 +90,7 @@ public class ContractsScrollableList extends ScrollableTableList<ContractData> i
 		return new ArrayList<>(ContractDataManager.getInstance(false).getClientCache());
 	}
 
-	public GUIHorizontalButtonTablePane redrawButtonPane(final ContractData contract, GUIAncor anchor) {
+	public GUIHorizontalButtonTablePane redrawButtonPane(ContractData contract, GUIAncor anchor) {
 		GUIHorizontalButtonTablePane buttonPane;
 		ContractDataManager dataManager = ContractDataManager.getInstance(false);
 		if(player.getFactionId() == contract.getContractor().getIdFaction()) {
@@ -138,8 +142,32 @@ public class ContractsScrollableList extends ScrollableTableList<ContractData> i
 				}
 			});
 		} else {
-			buttonPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, anchor);
+			buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, anchor);
 			buttonPane.onInit();
+			buttonPane.addButton(0, 0, "ACCEPT CONTRACT", GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
+				@Override
+				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+					if(mouseEvent.pressedLeftMouse()) {
+						getState().getController().queueUIAudio("0022_action - buttons push small");
+						PacketUtil.sendPacketToServer(new AcceptContractPacket(contract.getUUID()));
+					}
+				}
+
+				@Override
+				public boolean isOccluded() {
+					return contract.getClaimants().containsKey(player.getName());
+				}
+			}, new GUIActivationCallback() {
+				@Override
+				public boolean isVisible(InputState inputState) {
+					return true;
+				}
+
+				@Override
+				public boolean isActive(InputState inputState) {
+					return !contract.getClaimants().containsKey(player.getName());
+				}
+			});
 		}
 		return buttonPane;
 	}

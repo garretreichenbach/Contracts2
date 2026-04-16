@@ -2,8 +2,8 @@ package videogoose.contracts.data.contract;
 
 import api.network.PacketReadBuffer;
 import org.json.JSONObject;
-import org.schema.game.common.data.player.PlayerState;
 import org.schema.common.util.linAlg.Vector3i;
+import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import videogoose.contracts.Contracts;
 import videogoose.contracts.manager.ConfigManager;
@@ -22,7 +22,7 @@ public class BountyContract extends ContractData {
 	public static final int MOB = 1;
 
 	private JSONObject targetData;
-	private boolean killedTarget = false;
+	private boolean killedTarget;
 
 	public BountyContract(int contractorID, String name, JSONObject targetData, Difficulty difficulty) {
 		super(ContractType.BOUNTY, contractorID, name, targetData.getLong("reward"), difficulty);

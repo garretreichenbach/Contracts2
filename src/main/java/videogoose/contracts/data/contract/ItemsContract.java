@@ -11,75 +11,75 @@ import java.io.IOException;
 
 public class ItemsContract extends ContractData {
 
-    private static final byte VERSION = 0;
-    private short targetID;
-    private int targetAmount;
+	private static final byte VERSION = 0;
+	private short targetID;
+	private int targetAmount;
 
-    public ItemsContract(PacketReadBuffer packetReadBuffer) throws IOException {
-        super(packetReadBuffer);
-    }
+	public ItemsContract(PacketReadBuffer packetReadBuffer) throws IOException {
+		super(packetReadBuffer);
+	}
 
-    public ItemsContract(int contractorID, String name, long reward, short targetID, int targetAmount, Difficulty difficulty) {
-	    super(ContractType.ITEMS, contractorID, name, reward, difficulty);
-	    this.targetID = targetID;
-        this.targetAmount = targetAmount;
-    }
+	public ItemsContract(int contractorID, String name, long reward, short targetID, int targetAmount, Difficulty difficulty) {
+		super(ContractType.ITEMS, contractorID, name, reward, difficulty);
+		this.targetID = targetID;
+		this.targetAmount = targetAmount;
+	}
 
-    public ItemsContract(JSONObject json) {
-        super(json);
-    }
+	public ItemsContract(JSONObject json) {
+		super(json);
+	}
 
-    @Override
-    public JSONObject serialize() {
-        JSONObject data = super.serialize();
-        data.put("target_id", targetID);
-        data.put("target_amount", targetAmount);
-        return data;
-    }
+	@Override
+	public JSONObject serialize() {
+		JSONObject data = super.serialize();
+		data.put("target_id", targetID);
+		data.put("target_amount", targetAmount);
+		return data;
+	}
 
-    @Override
-    public void deserialize(JSONObject data) {
-        super.deserialize(data);
-        targetID = (short) data.getInt("target_id");
-        targetAmount = data.getInt("target_amount");
-    }
+	@Override
+	public void deserialize(JSONObject data) {
+		super.deserialize(data);
+		targetID = (short) data.getInt("target_id");
+		targetAmount = data.getInt("target_amount");
+	}
 
-    @Override
-    public void serializeNetwork(PacketWriteBuffer writeBuffer) throws IOException {
-        super.serializeNetwork(writeBuffer);
-        writeBuffer.writeShort(targetID);
-        writeBuffer.writeInt(targetAmount);
-    }
+	@Override
+	public void serializeNetwork(PacketWriteBuffer writeBuffer) throws IOException {
+		super.serializeNetwork(writeBuffer);
+		writeBuffer.writeShort(targetID);
+		writeBuffer.writeInt(targetAmount);
+	}
 
-    @Override
-    public void deserializeNetwork(PacketReadBuffer readBuffer) throws IOException {
-        super.deserializeNetwork(readBuffer);
-        targetID = readBuffer.readShort();
-        targetAmount = readBuffer.readInt();
-    }
+	@Override
+	public void deserializeNetwork(PacketReadBuffer readBuffer) throws IOException {
+		super.deserializeNetwork(readBuffer);
+		targetID = readBuffer.readShort();
+		targetAmount = readBuffer.readInt();
+	}
 
-    @Override
-    public boolean canComplete(PlayerState player) {
-        if(!claimants.containsKey(player.getName())) return false;
-        if(player.isAdmin() && player.isUseCreativeMode()) return true;
-        else {
-            Inventory playerInventory = player.getInventory();
-            if(playerInventory.isLockedInventory()) return false;
-            int count = InventoryUtils.getItemAmount(playerInventory, targetID);
-            return count >= targetAmount;
-        }
-    }
+	@Override
+	public boolean canComplete(PlayerState player) {
+		if(!claimants.containsKey(player.getName())) return false;
+		if(player.isAdmin() && player.isUseCreativeMode()) return true;
+		else {
+			Inventory playerInventory = player.getInventory();
+			if(playerInventory.isLockedInventory()) return false;
+			int count = InventoryUtils.getItemAmount(playerInventory, targetID);
+			return count >= targetAmount;
+		}
+	}
 
-    @Override
-    public ContractType getContractType() {
-        return ContractType.ITEMS;
-    }
+	@Override
+	public ContractType getContractType() {
+		return ContractType.ITEMS;
+	}
 
-    @Override
-    public void onCompletion(PlayerState player) {
-        assert player.isOnServer();
-        Inventory playerInventory = player.getInventory();
-        InventoryUtils.consumeItems(playerInventory, targetID, targetAmount);
-        payoutReward(player);
-    }
+	@Override
+	public void onCompletion(PlayerState player) {
+		assert player.isOnServer();
+		Inventory playerInventory = player.getInventory();
+		InventoryUtils.consumeItems(playerInventory, targetID, targetAmount);
+		payoutReward(player);
+	}
 }

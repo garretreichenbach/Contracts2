@@ -8,8 +8,10 @@ import api.utils.StarRunnable;
 import videogoose.contracts.commands.*;
 import videogoose.contracts.data.contract.ContractDataManager;
 import videogoose.contracts.manager.ConfigManager;
+import videogoose.contracts.manager.EscortManager;
 import videogoose.contracts.manager.EventManager;
 import videogoose.contracts.manager.GUIManager;
+import videogoose.contracts.networking.AcceptContractPacket;
 import videogoose.contracts.networking.SendDataPacket;
 import videogoose.contracts.networking.SyncRequestPacket;
 
@@ -52,6 +54,13 @@ public class Contracts extends StarMod {
                 }
             }.runTimer(this, ConfigManager.getAutoGenerateContractCheckTimer());
         }
+        // Escort mission update timer
+        new StarRunnable() {
+            @Override
+            public void run() {
+                EscortManager.getInstance().update();
+            }
+        }.runTimer(this, ConfigManager.getEscortUpdateInterval());
     }
 
     private void registerCommands() {
@@ -62,6 +71,7 @@ public class Contracts extends StarMod {
     }
 
     private void registerPackets() {
+        PacketUtil.registerPacket(AcceptContractPacket.class);
         PacketUtil.registerPacket(SendDataPacket.class);
         PacketUtil.registerPacket(SyncRequestPacket.class);
     }

@@ -11,11 +11,6 @@ import videogoose.contracts.Contracts;
 
 import java.io.IOException;
 
-/**
- * [Description]
- *
- * @author Garret Reichenbach
- */
 public class SectorUtils {
 
 	public static Vector3i getRandomSector(int range) {

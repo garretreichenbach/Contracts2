@@ -3,11 +3,7 @@ package videogoose.contracts.manager;
 import videogoose.contracts.data.player.PlayerData;
 import videogoose.contracts.data.player.PlayerDataManager;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -89,6 +85,7 @@ public class AggressionManager {
 	/**
 	 * Records a kill by the given player against the given NPC faction.
 	 * Persists the updated data to PlayerData.
+	 *
 	 * @return the new kill count after recording (post-decay pruning)
 	 */
 	public int recordKill(String playerName, int factionId) {
