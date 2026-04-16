@@ -19,8 +19,8 @@ public class ItemsContract extends ContractData {
         super(packetReadBuffer);
     }
 
-    public ItemsContract(int contractorID, String name, long reward, short targetID, int targetAmount) {
-	    super(ContractType.ITEMS, contractorID, name, reward);
+    public ItemsContract(int contractorID, String name, long reward, short targetID, int targetAmount, Difficulty difficulty) {
+	    super(ContractType.ITEMS, contractorID, name, reward, difficulty);
 	    this.targetID = targetID;
         this.targetAmount = targetAmount;
     }

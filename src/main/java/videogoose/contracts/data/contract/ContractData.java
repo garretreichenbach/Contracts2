@@ -17,19 +17,21 @@ import java.util.Objects;
 
 public abstract class ContractData extends SerializableData {
 
-	private final byte VERSION = 0;
+	private final byte VERSION = 1;
 	private ContractType type;
 	protected String name;
 	protected int contractorID;
 	protected long reward;
+	protected Difficulty difficulty = Difficulty.NORMAL;
 	protected HashMap<String, Long> claimants = new HashMap<>();
 
-	protected ContractData(ContractType type, int contractorID, String name, long reward) {
+	protected ContractData(ContractType type, int contractorID, String name, long reward, Difficulty difficulty) {
 		super(DataType.CONTRACT_DATA);
 		this.type = type;
 		this.contractorID = contractorID;
 		this.name = name;
-		this.reward = reward;
+		this.difficulty = difficulty;
+		this.reward = (long) (reward * difficulty.rewardMultiplier);
 	}
 
 	protected ContractData(JSONObject jsonObject) {
@@ -61,6 +63,7 @@ public abstract class ContractData extends SerializableData {
 		data.put("name", name);
 		data.put("contractor_id", contractorID);
 		data.put("reward", reward);
+		data.put("difficulty", difficulty.name());
 		JSONObject claimantsJson = new JSONObject();
 		for(Map.Entry<String, Long> entry : claimants.entrySet()) {
 			claimantsJson.put(entry.getKey(), entry.getValue());
@@ -71,17 +74,13 @@ public abstract class ContractData extends SerializableData {
 
 	@Override
 	public void deserialize(JSONObject data) {
-		if(data.has("version")) {
-			byte version = (byte) data.getInt("version");
-			if(version != VERSION) {
-				throw new IllegalStateException("Incompatible contract data version: " + version + " (expected: " + VERSION + ")");
-			}
-		}
+		byte version = data.has("version") ? (byte) data.getInt("version") : 0;
 		dataUUID = data.getString("uuid");
 		type = ContractType.fromString(data.getString("type"));
 		name = data.getString("name");
 		contractorID = data.getInt("contractor_id");
 		reward = data.getLong("reward");
+		difficulty = version >= 1 && data.has("difficulty") ? Difficulty.fromString(data.getString("difficulty")) : Difficulty.NORMAL;
 		claimants = new HashMap<>();
 		if(data.has("claimants")) {
 			JSONObject claimantsJson = data.getJSONObject("claimants");
@@ -100,6 +99,7 @@ public abstract class ContractData extends SerializableData {
 		writeBuffer.writeString(name);
 		writeBuffer.writeInt(contractorID);
 		writeBuffer.writeLong(reward);
+		writeBuffer.writeString(difficulty.name());
 		writeBuffer.writeInt(claimants.size());
 		for(Map.Entry<String, Long> entry : claimants.entrySet()) {
 			writeBuffer.writeString(entry.getKey());
@@ -110,13 +110,11 @@ public abstract class ContractData extends SerializableData {
 	@Override
 	public void deserializeNetwork(PacketReadBuffer readBuffer) throws IOException {
 		byte version = readBuffer.readByte();
-		if(version != VERSION) {
-			throw new IOException("Incompatible contract data version: " + version + " (expected: " + VERSION + ")");
-		}
 		dataUUID = readBuffer.readString();
 		name = readBuffer.readString();
 		contractorID = readBuffer.readInt();
 		reward = readBuffer.readLong();
+		difficulty = version >= 1 ? Difficulty.fromString(readBuffer.readString()) : Difficulty.NORMAL;
 		int claimantCount = readBuffer.readInt();
 		claimants = new HashMap<>(claimantCount);
 		for(int i = 0; i < claimantCount; i++) {
@@ -141,6 +139,10 @@ public abstract class ContractData extends SerializableData {
 
 	public String getContractorName() {
 		return (contractorID != 0) ? getContractor().getName() : "Non-Aligned";
+	}
+
+	public Difficulty getDifficulty() {
+		return difficulty;
 	}
 
 	public long getReward() {
@@ -182,6 +184,31 @@ public abstract class ContractData extends SerializableData {
 
 		public static ContractType getRandomType() {
 			return values()[(int) (Math.random() * (values().length - 1)) + 1];
+		}
+	}
+
+	public enum Difficulty {
+		EASY("Easy", 0.75f),
+		NORMAL("Normal", 1.0f),
+		HARD("Hard", 1.5f),
+		EXTREME("Extreme", 2.5f);
+
+		public final String displayName;
+		public final float rewardMultiplier;
+
+		Difficulty(String displayName, float rewardMultiplier) {
+			this.displayName = displayName;
+			this.rewardMultiplier = rewardMultiplier;
+		}
+
+		public static Difficulty fromString(String s) {
+			return Arrays.stream(values())
+					.filter(d -> s.trim().equalsIgnoreCase(d.name().trim()))
+					.findFirst().orElse(NORMAL);
+		}
+
+		public static Difficulty getRandomDifficulty() {
+			return values()[(int) (Math.random() * values().length)];
 		}
 	}
 }

@@ -2,7 +2,9 @@ package videogoose.contracts.manager;
 
 import api.utils.simpleconfig.SimpleConfigBool;
 import api.utils.simpleconfig.SimpleConfigContainer;
+import api.utils.simpleconfig.SimpleConfigDouble;
 import api.utils.simpleconfig.SimpleConfigInt;
+import api.utils.simpleconfig.SimpleConfigString;
 import videogoose.contracts.Contracts;
 
 public final class ConfigManager {
@@ -19,6 +21,9 @@ public final class ConfigManager {
     private static SimpleConfigInt blueprintUpdateInterval;
     private static SimpleConfigInt maxBountyMobCount;
     private static SimpleConfigInt maxBountyMobCombinedMass;
+    private static SimpleConfigString rewardType;
+    private static SimpleConfigInt rewardItemId;
+    private static SimpleConfigDouble rewardBaseMultiplier;
 
     private ConfigManager() {}
 
@@ -35,6 +40,9 @@ public final class ConfigManager {
         blueprintUpdateInterval        = new SimpleConfigInt(config,  "blueprint_update_interval",           300000,  "Interval in milliseconds between blueprint cache refreshes.");
         maxBountyMobCount              = new SimpleConfigInt(config,  "max_bounty_mob_count",                12,      "Maximum number of mobs in a single bounty contract.");
         maxBountyMobCombinedMass       = new SimpleConfigInt(config,  "max_bounty_mob_combined_mass",        350000,  "Maximum combined mass of mobs in a single bounty contract.");
+        rewardType                     = new SimpleConfigString(config, "reward_type",                        "CREDITS", "Reward type for contracts. CREDITS = pay credits, ITEM = pay items.");
+        rewardItemId                   = new SimpleConfigInt(config,  "reward_item_id",                      -1,      "Block/item ID to use when reward_type is ITEM (e.g. gold bar ID).");
+        rewardBaseMultiplier           = new SimpleConfigDouble(config, "reward_base_multiplier",             1.0,     "Base multiplier applied to all contract rewards before difficulty scaling.");
 
         config.readWriteFields();
 

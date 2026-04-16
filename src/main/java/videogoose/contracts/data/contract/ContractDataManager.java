@@ -79,6 +79,7 @@ public class ContractDataManager extends DataManager<ContractData> {
 		short targetId;
 		int targetAmount;
 		ContractData randomContract = null;
+		ContractData.Difficulty difficulty = ContractData.Difficulty.getRandomDifficulty();
 		switch(contractType) {
 			case ITEMS:
 				for(ElementInformation info : getProductionFilter()) {
@@ -86,12 +87,12 @@ public class ContractDataManager extends DataManager<ContractData> {
 				}
 				int productionIndex = random.nextInt(possibleIDs.size() - 1) + 1;
 				short productionID = possibleIDs.get(productionIndex);
-				contractName = "Produce x" + amountInt + " " + ElementKeyMap.getInfo(productionID).getName();
+				contractName = "[" + difficulty.displayName + "] Produce x" + amountInt + " " + ElementKeyMap.getInfo(productionID).getName();
 				basePrice = (long) Math.abs(ElementKeyMap.getInfo(productionID).getPrice(true) * 1.3f); // Increase base price by 30% for contract reward calculation
 				long reward = Math.abs((basePrice * amountInt));
 				targetId = productionID;
 				targetAmount = amountInt;
-				randomContract = new ItemsContract(FactionManager.TRAIDING_GUILD_ID, contractName, reward, targetId, targetAmount);
+				randomContract = new ItemsContract(FactionManager.TRAIDING_GUILD_ID, contractName, reward, targetId, targetAmount, difficulty);
 				break;
 			case BOUNTY:
 				randomContract = BountyContract.generateRandomMob(FactionManager.TRAIDING_GUILD_ID);

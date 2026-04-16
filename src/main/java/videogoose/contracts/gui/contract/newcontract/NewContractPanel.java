@@ -735,7 +735,9 @@ public class NewContractPanel extends GUIInputPanel implements BlockTypeSearchRu
 				JSONObject targetData = new JSONObject();
 				targetData.put("player_name", playerData.getName());
 				String contractName = "Kill " + playerData.getName();
-				BountyContract contract = new BountyContract(currentPlayer.getFactionId(), contractName, bountyAmount, targetData);
+				targetData.put("target_type", BountyContract.PLAYER);
+				targetData.put("reward", bountyAmount);
+				BountyContract contract = new BountyContract(currentPlayer.getFactionId(), contractName, targetData, ContractData.Difficulty.NORMAL);
 				ContractDataManager.getInstance(currentPlayer.isOnServer()).addData(contract, currentPlayer.isOnServer());
 				ContractDataManager.getInstance(currentPlayer.isOnServer()).sendPacket(contract, DataManager.ADD_DATA, currentPlayer.isOnServer());
 				currentPlayer.setCredits(currentPlayer.getCredits() - contract.getReward());

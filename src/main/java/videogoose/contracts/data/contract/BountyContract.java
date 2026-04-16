@@ -24,16 +24,9 @@ public class BountyContract extends ContractData {
 	private JSONObject targetData;
 	private boolean killedTarget = false;
 
-	protected BountyContract(int contractorID, String name, JSONObject targetData) {
-		super(ContractType.BOUNTY, contractorID, name, targetData.getLong("reward"));
+	public BountyContract(int contractorID, String name, JSONObject targetData, Difficulty difficulty) {
+		super(ContractType.BOUNTY, contractorID, name, targetData.getLong("reward"), difficulty);
 		this.targetData = targetData;
-	}
-
-	public BountyContract(int contractorID, String name, long reward, JSONObject targetData) {
-		this(contractorID, name, targetData);
-		this.reward = reward;
-		this.name = name;
-		this.contractorID = contractorID;
 	}
 
 	public BountyContract(PacketReadBuffer packetReadBuffer) throws IOException {
@@ -47,10 +40,11 @@ public class BountyContract extends ContractData {
 	public static BountyContract generateRandomMob(int factionId) {
 		JSONObject targetData = generateMobTarget();
 		if(targetData != null) {
+			Difficulty difficulty = Difficulty.getRandomDifficulty();
 			String name = FlavorUtils.generateGroupName(FlavorUtils.FlavorType.PIRATE);
 			Vector3i sector = SectorUtils.getRandomSector(10);
-			String contractName = "Defeat " + name + " in Sector " + sector;
-			return new BountyContract(factionId, contractName, targetData);
+			String contractName = "[" + difficulty.displayName + "] Defeat " + name + " in Sector " + sector;
+			return new BountyContract(factionId, contractName, targetData, difficulty);
 		}
 		throw new IllegalStateException("Failed to generate a valid BountyContract for mobs.");
 	}

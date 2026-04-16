@@ -2,7 +2,7 @@
   "name": "Contracts",
   "author": "VideoGoose",
   "description": "Adds completable contracts for player and faction interaction.",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "starmade_version": "0.205.4",
   "client_mod": false,
   "server_mod": false,

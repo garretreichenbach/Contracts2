@@ -5,11 +5,8 @@ import api.mod.config.PersistentObjectUtil;
 import api.network.packets.PacketUtil;
 import org.schema.game.common.data.player.PlayerState;
 import videogoose.contracts.Contracts;
-import videogoose.contracts.data.contract.ContractData;
 import videogoose.contracts.data.contract.ContractDataManager;
-import videogoose.contracts.data.contract.active.ActiveContractData;
 import videogoose.contracts.data.contract.active.ActiveContractDataManager;
-import videogoose.contracts.data.player.PlayerData;
 import videogoose.contracts.data.player.PlayerDataManager;
 import videogoose.contracts.networking.SendDataPacket;
 import videogoose.contracts.networking.SyncRequestPacket;
@@ -17,11 +14,6 @@ import videogoose.contracts.networking.SyncRequestPacket;
 import java.util.Collection;
 import java.util.Set;
 
-/**
- * [Description]
- *
- * @author TheDerpGamer
- */
 public abstract class DataManager<E extends SerializableData> {
 
 	public static final int ADD_DATA = 0;
@@ -40,8 +32,7 @@ public abstract class DataManager<E extends SerializableData> {
 	}
 
 	public void sendDataToAllPlayers(SerializableData data, int type) {
-		GameServer.getServerState().getPlayerStatesByName().values()
-				.forEach(player -> sendDataToPlayer(player, data, type));
+		GameServer.getServerState().getPlayerStatesByName().values().forEach(player -> sendDataToPlayer(player, data, type));
 	}
 
 	public void sendDataToPlayer(PlayerState player, SerializableData data, int type) {

@@ -96,11 +96,11 @@ public class PlayerContractsScrollableList extends ScrollableTableList<ContractD
 		return contracts;
 	}
 
-	public GUIHorizontalButtonTablePane redrawButtonPane(final ContractData contract, GUIAncor anchor) throws PlayerNotFountException {
+	public GUIHorizontalButtonTablePane redrawButtonPane(ContractData contract, GUIAncor anchor) throws PlayerNotFountException {
 		GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, anchor);
 		buttonPane.onInit();
-		final ContractDataManager dataManager = ContractDataManager.getInstance(false);
-		final PlayerData playerData = PlayerDataManager.getInstance(false).getClientOwnData();
+		ContractDataManager dataManager = ContractDataManager.getInstance(false);
+		PlayerData playerData = PlayerDataManager.getInstance(false).getClientOwnData();
 
 		buttonPane.addButton(0, 0, "CANCEL CLAIM", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
 			@Override
@@ -138,8 +138,9 @@ public class PlayerContractsScrollableList extends ScrollableTableList<ContractD
 					if(contract.canComplete(GameClient.getClientPlayerState())) {
 						getState().getController().queueUIAudio("0022_action - buttons push small");
 						ContractDataManager.completeContract(playerData, contract);
-						if(GUIManager.getInstance().contractsTab != null)
+						if(GUIManager.getInstance().contractsTab != null) {
 							GUIManager.getInstance().contractsTab.flagForRefresh();
+						}
 						flagDirty();
 					} else {
 						getState().getController().queueUIAudio("0022_menu_ui - error");
@@ -171,7 +172,7 @@ public class PlayerContractsScrollableList extends ScrollableTableList<ContractD
 	public void updateListEntries(GUIElementList guiElementList, Set<ContractData> set) {
 		guiElementList.deleteObservers();
 		guiElementList.addObserver(this);
-		for(final ContractData contract : set) {
+		for(ContractData contract : set) {
 			try {
 				GUITextOverlayTable nameTextElement;
 				(nameTextElement = new GUITextOverlayTable(10, 10, getState())).setTextSimple(contract.getName());

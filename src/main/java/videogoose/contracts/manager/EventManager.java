@@ -48,7 +48,7 @@ public class EventManager {
 					}
 				}
 				if(killer == null) return;
-				final PlayerState finalKiller = killer;
+				PlayerState finalKiller = killer;
 				ContractDataManager mgr = ContractDataManager.getInstance(event.getPlayer().isOnServer());
 				List<BountyContract> bounties = (List<BountyContract>) mgr.getContractsOfType(BountyContract.class, event.getPlayer().isOnServer());
 				for(BountyContract bounty : bounties) {
