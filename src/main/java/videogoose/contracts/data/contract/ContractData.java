@@ -3,6 +3,7 @@ package videogoose.contracts.data.contract;
 import api.common.GameCommon;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
+import api.utils.game.inventory.InventoryUtils;
 import org.json.JSONObject;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.Faction;
@@ -147,6 +148,22 @@ public abstract class ContractData extends SerializableData {
 
 	public long getReward() {
 		return reward;
+	}
+
+	public long getScaledReward() {
+		return (long) (reward * ConfigManager.getRewardBaseMultiplier());
+	}
+
+	public void payoutReward(PlayerState player) {
+		long scaledReward = getScaledReward();
+		if(ConfigManager.isItemReward()) {
+			short itemId = ConfigManager.getRewardItemId();
+			if(itemId > 0) {
+				InventoryUtils.addItem(player.getInventory(), itemId, (int) scaledReward);
+			}
+		} else {
+			player.setCredits(player.getCredits() + scaledReward);
+		}
 	}
 
 	public HashMap<String, Long> getClaimants() {

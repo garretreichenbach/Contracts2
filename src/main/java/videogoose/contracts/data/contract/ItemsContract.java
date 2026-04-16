@@ -80,6 +80,6 @@ public class ItemsContract extends ContractData {
         assert player.isOnServer();
         Inventory playerInventory = player.getInventory();
         InventoryUtils.consumeItems(playerInventory, targetID, targetAmount);
-        player.setCredits(player.getCredits() + reward);
+        payoutReward(player);
     }
 }

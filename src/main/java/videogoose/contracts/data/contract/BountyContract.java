@@ -125,7 +125,7 @@ public class BountyContract extends ContractData {
 
 	@Override
 	public void onCompletion(PlayerState player) {
-		player.setCredits(player.getCredits() + reward);
+		payoutReward(player);
 	}
 
 	@Override
